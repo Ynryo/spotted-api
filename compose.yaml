@@ -1,6 +1,9 @@
 services:
   php:
-    image: dunglas/frankenphp:1-php8.3-alpine
+    container_name: spotted-api-php
+    build:
+      context: .
+      dockerfile: Dockerfile
     restart: unless-stopped
     ports:
       - "127.0.0.1:8080:80"
@@ -10,3 +13,9 @@ services:
       SERVER_NAME: ":80"
     extra_hosts:
       - "host_server:host-gateway"
+    networks:
+      - spotted-network
+
+networks:
+  spotted-network:
+    driver: bridge
