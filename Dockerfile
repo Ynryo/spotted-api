@@ -1,4 +1,4 @@
-FROM dunglas/frankenphp:1-php8.3-alpine
+FROM dunglas/frankenphp:1-php8.4-alpine
 
 # Installer les extensions PHP requises pour Symfony & MariaDB
 RUN install-php-extensions \
