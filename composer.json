@@ -21,9 +21,13 @@
         "symfony/property-info": "^7.4",
         "symfony/serializer": "^7.4",
         "symfony/twig-bundle": "^7.4",
-        "symfony/validator": "^7.4"
+        "symfony/validator": "^7.4",
+        "symfony/var-exporter": "7.4"
     },
     "config": {
+        "platform": {
+            "php": "8.3.33"
+        },
         "allow-plugins": {
             "symfony/flex": true,
             "symfony/runtime": true
