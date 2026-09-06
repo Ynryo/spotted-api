@@ -11,9 +11,8 @@ use Symfony\Component\Routing\Attribute\Route;
 class MarkerController extends AbstractController
 {
     #[Route('/markers', name: 'app_markers', methods: ['GET'])]
-    public function getMarkers(
-        #[MapQueryString] MarkerQueryDto $query
-    ): JsonResponse {
+    public function getMarkers(#[MapQueryString] MarkerQueryDto $query): JsonResponse
+    {
         // 1. Accès aux coordonnées transmises par l'application mobile :
         // $query->swLat, $query->swLon, $query->neLat, $query->neLon
 
@@ -44,6 +43,7 @@ class MarkerController extends AbstractController
                 'ne' => ['lat' => $query->neLat, 'lon' => $query->neLon],
             ],
             'data' => $markers,
+            'datetime' => date('Y-m-d H:i:s'),
         ]);
     }
 }
