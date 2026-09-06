@@ -17,5 +17,4 @@ jobs:
                   key: ${{ secrets.DEBIAN_SSH_KEY }}
                   script: |
                       cd /var/www/html/spotted-api
-                      chmod +x deploy.sh
                       ./deploy.sh

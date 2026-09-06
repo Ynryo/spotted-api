@@ -9,3 +9,9 @@
 
 controllers:
     resource: routing.controllers
+    prefix: /v1
+
+api_platform:
+    resource: .
+    type: api_platform
+    prefix: /v1
