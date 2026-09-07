@@ -11,38 +11,31 @@ use Symfony\Component\Routing\Attribute\Route;
 class MarkerController extends AbstractController
 {
     #[Route('/markers', name: 'app_markers', methods: ['GET'])]
-    public function getMarkers(#[MapQueryString] MarkerQueryDto $query): JsonResponse
+    public function getMarkers(#[MapQueryString] MarkerQueryDto $query, \Redis $redis): JsonResponse
     {
-        // 1. Accès aux coordonnées transmises par l'application mobile :
-        // $query->swLat, $query->swLon, $query->neLat, $query->neLon
+        $raw = $redis->get("markers");
+        
+        if (!$raw) {
+            return new JsonResponse([
+                'count' => 0,
+                'data' => [],
+                'message' => 'No markers found in this area',
+                'datetime' => date('Y-m-d H:i:s'),
+            ]);
+        }
 
-        // 2. Exemple de données simulées (en attendant de brancher le service Redis) :
-        $markers = [
-            [
-                'id' => 'bus-101',
-                'line' => 'C3',
-                'color' => '#E30613',
-                'lat' => 45.7640,
-                'lon' => 4.8357,
-                'bearing' => 90.0,
-            ],
-            [
-                'id' => 'bus-102',
-                'line' => 'C1',
-                'color' => '#0072BC',
-                'lat' => 45.7700,
-                'lon' => 4.8500,
-                'bearing' => 180.0,
-            ],
-        ];
+        $markers = json_decode($raw, true);
+
+        $filtered = array_filter($markers, function ($marker) use ($query) {
+            return $marker['lat'] >= $query->swLat
+                && $marker['lat'] <= $query->neLat
+                && $marker['lon'] >= $query->swLon
+                && $marker['lon'] <= $query->neLon;
+        });
 
         return new JsonResponse([
-            'count' => count($markers),
-            'boundingBox' => [
-                'sw' => ['lat' => $query->swLat, 'lon' => $query->swLon],
-                'ne' => ['lat' => $query->neLat, 'lon' => $query->neLon],
-            ],
-            'data' => $markers,
+            'count' => count($filtered),
+            'data' => $filtered,
             'datetime' => date('Y-m-d H:i:s'),
         ]);
     }
