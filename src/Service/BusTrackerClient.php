@@ -6,7 +6,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class BusTrackerClient
 {
-    private const BASE_URL = 'https://bus-tracker.fr/api/markers';
+    private const BASE_URL = 'https://bus-tracker.fr/api/vehicle-journeys/markers';
 
     // Bounding Box France métropolitaine + Corse
     private const FRANCE_BOUNDS = [
