@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\DTO\MarkerQueryDto;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -14,14 +15,14 @@ class MarkerController extends AbstractController
     public function getMarkers(#[MapQueryString] MarkerQueryDto $query, \Redis $redis): JsonResponse
     {
         $raw = $redis->get("markers");
-        
+
         if (!$raw) {
             return new JsonResponse([
                 'count' => 0,
                 'data' => [],
                 'message' => 'No markers found in this area',
                 'datetime' => date('Y-m-d H:i:s'),
-            ]);
+            ], Response::HTTP_NO_CONTENT);
         }
 
         $content = json_decode($raw, true);
