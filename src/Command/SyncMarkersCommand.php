@@ -38,7 +38,6 @@ class SyncMarkersCommand extends Command
 
                 $rawJson = $this->client->getLiveMarkers();
 
-                // Stockage dans Redis avec expiration automatique à 30 secondes
                 $this->redis->set('markers', $rawJson, ['ex' => 30]);
 
                 $decoded = json_decode($rawJson, true);

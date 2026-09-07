@@ -43,4 +43,50 @@ class BusTrackerClient
 
         return $content;
     }
+
+    /**
+     * Récupère la fiche détaillée d'un trajet de véhicule (arrêts, horaires, retards)
+     */
+    public function getVehicleJourney(string $id): ?array
+    {
+        try {
+            $response = $this->httpClient->request('GET', "https://bus-tracker.fr/api/vehicle-journeys/{$id}", [
+                'headers' => [
+                    'Accept' => 'application/json',
+                ],
+                'timeout' => 10,
+            ]);
+
+            if ($response->getStatusCode() !== 200) {
+                return null;
+            }
+
+            return $response->toArray();
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * Récupère le tracé géographique (polyline) d'une ligne
+     */
+    public function getRoutePath(string $pathRef): ?array
+    {
+        try {
+            $response = $this->httpClient->request('GET', "https://bus-tracker.fr/api/paths/{$pathRef}", [
+                'headers' => [
+                    'Accept' => 'application/json',
+                ],
+                'timeout' => 10,
+            ]);
+
+            if ($response->getStatusCode() !== 200) {
+                return null;
+            }
+
+            return $response->toArray();
+        } catch (\Throwable) {
+            return null;
+        }
+    }
 }
