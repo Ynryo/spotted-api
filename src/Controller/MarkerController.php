@@ -24,18 +24,26 @@ class MarkerController extends AbstractController
             ]);
         }
 
-        $markers = json_decode($raw, true);
+        $content = json_decode($raw, true);
+        $markers = $content['markers'] ?? (is_array($content) ? $content : []);
 
         $filtered = array_filter($markers, function ($marker) use ($query) {
-            return $marker['lat'] >= $query->swLat
-                && $marker['lat'] <= $query->neLat
-                && $marker['lon'] >= $query->swLon
-                && $marker['lon'] <= $query->neLon;
+            $lat = $marker['position']['latitude'] ?? $marker['lat'] ?? null;
+            $lon = $marker['position']['longitude'] ?? $marker['lon'] ?? null;
+
+            if ($lat === null || $lon === null) {
+                return false;
+            }
+
+            return $lat >= $query->swLat
+                && $lat <= $query->neLat
+                && $lon >= $query->swLon
+                && $lon <= $query->neLon;
         });
 
         return new JsonResponse([
             'count' => count($filtered),
-            'data' => $filtered,
+            'data' => array_values($filtered),
             'datetime' => date('Y-m-d H:i:s'),
         ]);
     }
