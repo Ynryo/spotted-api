@@ -25,7 +25,7 @@ class MarkerController extends AbstractController
         }
 
         $content = json_decode($raw, true);
-        $markers = $content['markers'] ?? (is_array($content) ? $content : []);
+        $markers = $content['items'] ?? $content['markers'] ?? (is_array($content) ? $content : []);
 
         $filtered = array_filter($markers, function ($marker) use ($query) {
             $lat = $marker['position']['latitude'] ?? $marker['lat'] ?? null;
