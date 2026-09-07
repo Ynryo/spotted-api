@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1364913ec0fe1c68191367344dee8761",
+    "content-hash": "52f11fad0762b0c1550ad3013fc463cf",
     "packages": [
         {
             "name": "api-platform/doctrine-common",
@@ -8081,10 +8081,13 @@
     "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": {},
+    "platform": {
+        "ext-redis": "*"
+    },
     "platform-dev": {},
     "platform-overrides": {
-        "php": "8.3.33"
+        "php": "8.3.33",
+        "ext-redis": "6.0.0"
     },
     "plugin-api-version": "2.9.0"
 }

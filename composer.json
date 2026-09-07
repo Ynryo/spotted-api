@@ -23,11 +23,13 @@
         "symfony/twig-bundle": "^7.4",
         "symfony/validator": "^7.4",
         "symfony/var-exporter": "^7.4",
-        "symfony/http-client": "^7.4"
+        "symfony/http-client": "^7.4",
+        "ext-redis": "*"
     },
     "config": {
         "platform": {
-            "php": "8.3.33"
+            "php": "8.3.33",
+            "ext-redis": "6.0.0"
         },
         "allow-plugins": {
             "symfony/flex": true,
