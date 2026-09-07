@@ -33,8 +33,31 @@ class VehicleController extends AbstractController
         }
 
         // 2. Récupération du tracé de la ligne (avec cache long de 24h dans Redis)
+        $pathPoints = $this->getPath($journey['pathRef'], $client, $redis);
+
+        // 3. Formatage épuré des arrêts (calls) avec calcul du retard en minutes
+        $calls = $this->getStops($journey['calls'] ?? [], $redis);
+
+        // 4. Réponse JSON unifiée et allégée pour Spotted Android
+        return new JsonResponse([
+            'id' => $journey['id'] ?? $id,
+            'destination' => $journey['destination'] ?? null,
+            'direction' => $journey['direction'] ?? null,
+            'lineId' => $journey['lineId'] ?? null,
+            'networkId' => $journey['networkId'] ?? null,
+            'vehicleNumber' => $journey['vehicle']['number'] ?? null,
+            'serviceDate' => $journey['serviceDate'] ?? null,
+            'position' => $journey['position'] ?? null,
+            'callsCount' => count($calls),
+            'calls' => $calls,
+            'path' => $pathPoints,
+            'datetime' => date('Y-m-d H:i:s'),
+        ]);
+    }
+
+    private function getPath(string $pathRef, BusTrackerClient $client, \Redis $redis): array
+    {
         $pathPoints = [];
-        $pathRef = $journey['pathRef'] ?? null;
 
         if ($pathRef) {
             $pathCacheKey = "path:{$pathRef}";
@@ -59,44 +82,39 @@ class VehicleController extends AbstractController
                 }
             }
         }
+        return $pathPoints;
+    }
 
-        // 3. Formatage épuré des arrêts (calls) avec calcul du retard en minutes
-        $calls = [];
-        foreach ($journey['calls'] ?? [] as $call) {
-            $aimed = $call['aimedTime'] ?? null;
-            $expected = $call['expectedTime'] ?? $aimed;
-            $delayMinutes = 0;
+    private function getStops(array $calls, \Redis $redis): array
+    {
+        $stops = [];
 
-            if ($aimed && $expected) {
-                $delayMinutes = (int) round((strtotime($expected) - strtotime($aimed)) / 60);
-            }
-
-            $calls[] = [
+        foreach ($calls as $call) {
+            $stopUic = $this->getStopUic($call);
+            $stops[] = [
                 'stopName' => $call['stopName'] ?? null,
                 'stopOrder' => $call['stopOrder'] ?? null,
-                'aimedTime' => $aimed,
-                'expectedTime' => $expected,
-                'delayMinutes' => $delayMinutes,
+                'stopUic' => $stopUic,
+                'aimedTime' => $call['aimedTime'] ?? null,
+                'expectedTime' => $call['expectedTime'] ?? $call['aimedTime'],
+                'delayMinutes' => $call['delayMinutes'] ?? 0,
                 'status' => $call['callStatus'] ?? 'SCHEDULED',
-                'lat' => $call['latitude'] ?? null,
-                'lon' => $call['longitude'] ?? null,
+                'latitude' => $call['latitude'] ?? null,
+                'longitude' => $call['longitude'] ?? null,
+                'platform' => $this->getStopPlatform($stopUic, $redis),
             ];
         }
 
-        // 4. Réponse JSON unifiée et allégée pour Spotted Android
-        return new JsonResponse([
-            'id' => $journey['id'] ?? $id,
-            'destination' => $journey['destination'] ?? null,
-            'direction' => $journey['direction'] ?? null,
-            'lineId' => $journey['lineId'] ?? null,
-            'networkId' => $journey['networkId'] ?? null,
-            'vehicleNumber' => $journey['vehicle']['number'] ?? null,
-            'serviceDate' => $journey['serviceDate'] ?? null,
-            'position' => $journey['position'] ?? null,
-            'callsCount' => count($calls),
-            'calls' => $calls,
-            'path' => $pathPoints,
-            'datetime' => date('Y-m-d H:i:s'),
-        ]);
+        return $stops;
+    }
+
+    private function getStopUic(array $stop): ?string
+    {
+        return $stop['stopRef'] ? preg_split(":", $stop['stopRef'])[2] . substr(0, 7) : null;
+    }
+
+    private function getStopPlatform(array $stop): ?string
+    {
+        return $stop['platformName'] ?? null;
     }
 }
