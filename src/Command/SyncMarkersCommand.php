@@ -41,7 +41,10 @@ class SyncMarkersCommand extends Command
                 // Stockage dans Redis avec expiration automatique à 30 secondes
                 $this->redis->set('markers', $rawJson, ['ex' => 30]);
 
-                $output->writeln('<info>✓ Positions mises à jour dans Redis !</info>');
+                $decoded = json_decode($rawJson, true);
+                $count = count($decoded['items'] ?? $decoded['markers'] ?? []);
+
+                $output->writeln("<info>✓ $count positions mises à jour dans Redis !</info>");
             } catch (\Throwable $e) {
                 $output->writeln('<error>Erreur de synchronisation : ' . $e->getMessage() . '</error>');
             }

@@ -30,11 +30,17 @@ class BusTrackerClient
             'query' => self::FRANCE_BOUNDS,
             'headers' => [
                 'Accept' => 'application/json',
-                'Accept-Encoding' => 'gzip, deflate, br',
             ],
             'timeout' => 15,
         ]);
 
-        return $response->getContent();
+        $content = $response->getContent();
+
+        // Décompression de sécurité au cas où les données brutes restent compressées
+        if (str_starts_with($content, "\x1f\x8b")) {
+            $content = gzdecode($content) ?: $content;
+        }
+
+        return $content;
     }
 }
