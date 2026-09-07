@@ -44,7 +44,7 @@ class SyncMarkersCommand extends Command
                 $decoded = json_decode($rawJson, true);
                 $count = count($decoded['items'] ?? $decoded['markers'] ?? []);
 
-                $output->writeln("<info>✓ $count positions mises à jour dans Redis !</info>");
+                $output->writeln("<info>$count positions mises à jour dans Redis !</info>");
             } catch (\Throwable $e) {
                 $output->writeln('<error>Erreur de synchronisation : ' . $e->getMessage() . '</error>');
             }

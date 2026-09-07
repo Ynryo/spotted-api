@@ -27,6 +27,22 @@ services:
     networks:
       - spotted-network
 
+  worker:
+    container_name: spotted-api-worker
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - redis
+    restart: unless-stopped
+    volumes:
+      - ./:/app
+    environment:
+      SERVER_NAME: ":80"
+    networks:
+      - spotted-network
+    command: ["php", "bin/console", "app:sync-markers", "--watch"]
+
 networks:
   spotted-network:
     driver: bridge
