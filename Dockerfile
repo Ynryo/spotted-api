@@ -8,7 +8,8 @@ RUN install-php-extensions \
     pdo_mysql \
     intl \
     opcache \
-    zip
+    zip \
+    redis
 
 WORKDIR /app
 
