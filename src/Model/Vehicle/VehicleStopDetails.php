@@ -22,6 +22,9 @@ class VehicleStopDetails
         public readonly array $flags = [],
     ) {}
 
+    /**
+     * @param array<string, mixed> $call
+     */
     public static function fromArray(array $call): self
     {
         $stopRef = $call['stopRef'] ?? null;

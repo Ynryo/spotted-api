@@ -24,7 +24,8 @@
         "symfony/validator": "^7.4",
         "symfony/var-exporter": "^7.4",
         "symfony/http-client": "^7.4",
-        "ext-redis": "*"
+        "ext-redis": "*",
+        "ext-zlib": "*"
     },
     "config": {
         "platform": {

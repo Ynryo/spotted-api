@@ -46,6 +46,8 @@ class BusTrackerClient
 
     /**
      * Récupère la fiche détaillée d'un trajet de véhicule (arrêts, horaires, retards)
+     *
+     * @return array<string, mixed>|null
      */
     public function getVehicleJourney(string $id): ?array
     {
@@ -69,6 +71,8 @@ class BusTrackerClient
 
     /**
      * Récupère le tracé géographique (polyline) d'une ligne
+     *
+     * @return array<string, mixed>|null
      */
     public function getRoutePath(string $pathRef): ?array
     {
