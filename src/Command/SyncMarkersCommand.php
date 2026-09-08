@@ -38,7 +38,7 @@ class SyncMarkersCommand extends Command
 
                 $rawJson = $this->client->getLiveMarkers();
 
-                $this->redis->set('markers', $rawJson, ['ex' => 30]);
+                $this->redis->set('markers', $rawJson, ['ex' => CacheTtl::REALTIME->value]);
 
                 $decoded = json_decode($rawJson, true);
                 $count = count($decoded['items'] ?? $decoded['markers'] ?? []);

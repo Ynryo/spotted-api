@@ -24,7 +24,7 @@ class VehicleDetailsService
         } else {
             $journey = $this->client->getVehicleJourney($id);
             if ($journey) {
-                $this->redis?->set($journeyCacheKey, json_encode($journey), ['ex' => 15]);
+                $this->redis?->set($journeyCacheKey, json_encode($journey), ['ex' => CacheTtl::REALTIME->value]);
             }
         }
 
@@ -54,7 +54,7 @@ class VehicleDetailsService
                         ];
                     }, $rawPoints);
 
-                    $this->redis?->set($pathCacheKey, json_encode($pathPoints), ['ex' => 86400]); //24h
+                    $this->redis?->set($pathCacheKey, json_encode($pathPoints), ['ex' => CacheTtl::LONG->value]);
                 }
             }
         }
