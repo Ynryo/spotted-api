@@ -10,7 +10,6 @@ class VehicleStopDetails
     public function __construct(
         public readonly ?string $stopName,
         public readonly ?int $stopOrder,
-        public readonly ?string $stopRef,
         public readonly ?string $stopUIC,
         public readonly ?string $aimedTime,
         public readonly ?string $expectedTime,
@@ -46,7 +45,6 @@ class VehicleStopDetails
         return new self(
             stopName: $call['stopName'] ?? null,
             stopOrder: isset($call['stopOrder']) ? (int) $call['stopOrder'] : null,
-            stopRef: $stopRef,
             stopUIC: $stopUIC,
             aimedTime: $aimed,
             expectedTime: $expected,

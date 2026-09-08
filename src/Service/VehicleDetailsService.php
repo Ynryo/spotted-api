@@ -49,20 +49,20 @@ class VehicleDetailsService
                 if (!empty($rawPoints)) {
                     $pathPoints = array_map(function ($point) {
                         return [
-                            'lat' => $point[0] ?? null,
-                            'lon' => $point[1] ?? null,
+                            'latitude' => $point[0] ?? null,
+                            'longitude' => $point[1] ?? null,
                         ];
                     }, $rawPoints);
 
-                    $this->redis?->set($pathCacheKey, json_encode($pathPoints), ['ex' => 86400]);
+                    $this->redis?->set($pathCacheKey, json_encode($pathPoints), ['ex' => 86400]); //24h
                 }
             }
         }
 
         // 3. Transformation POO des arrêts (calls)
-        $calls = [];
+        $stops = [];
         foreach ($journey['calls'] ?? [] as $call) {
-            $calls[] = VehicleStopDetails::fromArray($call);
+            $stops[] = VehicleStopDetails::fromArray($call);
         }
 
         // 4. Transformation POO de la position
@@ -75,7 +75,7 @@ class VehicleDetailsService
             lineId: isset($journey['lineId']) ? (int) $journey['lineId'] : null,
             direction: $journey['direction'] ?? null,
             destination: $journey['destination'] ?? null,
-            calls: $calls,
+            stops: $stops,
             position: $position,
             networkId: isset($journey['networkId']) ? (int) $journey['networkId'] : null,
             serviceDate: $journey['serviceDate'] ?? null,
