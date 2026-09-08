@@ -73,7 +73,6 @@ class VehicleDetailsService
         return new VehicleDetails(
             id: $journey['id'] ?? $id,
             lineId: isset($journey['lineId']) ? (int) $journey['lineId'] : null,
-            direction: $journey['direction'] ?? null,
             destination: $journey['destination'] ?? null,
             stops: $stops,
             position: $position,
