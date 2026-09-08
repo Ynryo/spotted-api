@@ -38,6 +38,7 @@
 # PHPUnit
 /app/phpunit.xml
 /phpunit.xml
+/.phpunit.cache/
 
 # Build data
 /build/
@@ -58,10 +59,8 @@
 /config/secrets/prod/prod.decrypt.private.php
 /public/bundles/
 /var/
-/vendor/
 ###< symfony/framework-bundle ###
 
 # IDE
 .idea/
 .vscode/
-
