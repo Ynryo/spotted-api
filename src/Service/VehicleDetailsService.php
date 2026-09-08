@@ -2,29 +2,31 @@
 
 namespace App\Service;
 
+use App\Enum\CacheTtl;
 use App\Model\Vehicle\VehicleDetails;
 use App\Model\Vehicle\VehiclePosition;
 use App\Model\Vehicle\VehicleStopDetails;
+use Redis;
 
-class VehicleDetailsService
+readonly class VehicleDetailsService
 {
     public function __construct(
-        private readonly BusTrackerClient $client,
-        private readonly ?\Redis $redis = null
+        private BusTrackerClient $client,
+        private Redis            $redis
     ) {}
 
     public function getDetails(string $id): ?VehicleDetails
     {
         // 1. Récupération du trajet (cache court 15s dans Redis)
         $journeyCacheKey = "vehicle:journey:{$id}";
-        $cachedJourney = $this->redis?->get($journeyCacheKey);
+        $cachedJourney = $this->redis->get($journeyCacheKey);
 
         if ($cachedJourney) {
             $journey = json_decode($cachedJourney, true);
         } else {
             $journey = $this->client->getVehicleJourney($id);
             if ($journey) {
-                $this->redis?->set($journeyCacheKey, json_encode($journey), ['ex' => CacheTtl::REALTIME->value]);
+                $this->redis->set($journeyCacheKey, json_encode($journey), ['ex' => CacheTtl::REALTIME->value]);
             }
         }
 
@@ -38,7 +40,7 @@ class VehicleDetailsService
 
         if ($pathRef) {
             $pathCacheKey = "path:{$pathRef}";
-            $cachedPath = $this->redis?->get($pathCacheKey);
+            $cachedPath = $this->redis->get($pathCacheKey);
 
             if ($cachedPath) {
                 $pathPoints = json_decode($cachedPath, true);
@@ -54,7 +56,7 @@ class VehicleDetailsService
                         ];
                     }, $rawPoints);
 
-                    $this->redis?->set($pathCacheKey, json_encode($pathPoints), ['ex' => CacheTtl::LONG->value]);
+                    $this->redis->set($pathCacheKey, json_encode($pathPoints), ['ex' => CacheTtl::LONG->value]);
                 }
             }
         }

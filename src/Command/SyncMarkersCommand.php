@@ -4,6 +4,7 @@ namespace App\Command;
 
 use App\Enum\CacheTtl;
 use App\Service\BusTrackerClient;
+use Redis;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -18,7 +19,7 @@ class SyncMarkersCommand extends Command
 {
     public function __construct(
         private readonly BusTrackerClient $client,
-        private readonly \Redis           $redis
+        private readonly Redis           $redis
     )
     {
         parent::__construct();
