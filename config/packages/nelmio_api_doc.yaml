@@ -1,0 +1,9 @@
+nelmio_api_doc:
+    documentation:
+        info:
+            title: Spotted API
+            description: API de suivi en temps réel des transports (Bus, Tram, Trains)
+            version: 1.0.0
+    areas:
+        path_patterns:
+            - ^/v1(?!/doc)

@@ -1,5 +1,6 @@
 api_platform:
-    title: Hello API Platform
+    title: Spotted API
+    description: API de suivi en temps réel des transports (Bus, Tram, Trains)
     version: 1.0.0
     defaults:
         stateless: true

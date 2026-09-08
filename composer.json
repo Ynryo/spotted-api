@@ -25,7 +25,8 @@
         "symfony/var-exporter": "^7.4",
         "symfony/http-client": "^7.4",
         "ext-redis": "*",
-        "ext-zlib": "*"
+        "ext-zlib": "*",
+        "nelmio/api-doc-bundle": "^5.12"
     },
     "config": {
         "platform": {

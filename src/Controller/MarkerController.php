@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\DTO\MarkerQueryDto;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -12,6 +13,10 @@ use Symfony\Component\Routing\Attribute\Route;
 class MarkerController extends AbstractController
 {
     #[Route('/markers', name: 'app_markers', methods: ['GET'])]
+    #[OA\Tag(name: 'Markers')]
+    #[OA\Get(summary: 'Récupère les véhicules en direct dans une zone géographique (bounding box)')]
+    #[OA\Response(response: 200, description: 'Positions des véhicules trouvées dans la zone')]
+    #[OA\Response(response: 204, description: 'Aucun véhicule trouvé dans cette zone')]
     public function getMarkers(#[MapQueryString] MarkerQueryDto $query, \Redis $redis): JsonResponse
     {
         $raw = $redis->get("markers");

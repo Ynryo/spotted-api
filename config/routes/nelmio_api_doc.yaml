@@ -1,0 +1,16 @@
+# Expose your documentation as JSON swagger compliant
+app.swagger:
+    path: /v1/doc.json
+    methods: GET
+    defaults: { _controller: nelmio_api_doc.controller.swagger }
+
+app.swagger_ui:
+    path: /v1/docs
+    methods: GET
+    defaults: { _controller: nelmio_api_doc.controller.swagger_ui }
+
+app.swagger_ui_alias:
+    path: /v1/doc
+    methods: GET
+    defaults: { _controller: nelmio_api_doc.controller.swagger_ui }
+
