@@ -6,7 +6,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class BusTrackerClient
 {
-    private const BASE_URL = 'https://bus-tracker.fr/api/vehicle-journeys/markers';
+    private const string BASE_URL = 'https://bus-tracker.fr/api/';
 
     // Bounding Box France métropolitaine + Corse
     private const FRANCE_BOUNDS = [
@@ -26,7 +26,7 @@ class BusTrackerClient
      */
     public function getLiveMarkers(): string
     {
-        $response = $this->httpClient->request('GET', self::BASE_URL, [
+        $response = $this->httpClient->request('GET', self::BASE_URL . "vehicle-journeys/markers", [
             'query' => self::FRANCE_BOUNDS,
             'headers' => [
                 'Accept' => 'application/json',
@@ -52,16 +52,14 @@ class BusTrackerClient
     public function getVehicleJourney(string $id): ?array
     {
         try {
-            $response = $this->httpClient->request('GET', "https://bus-tracker.fr/api/vehicle-journeys/{$id}", [
+            $response = $this->httpClient->request('GET', self::BASE_URL . "vehicle-journeys/{$id}", [
                 'headers' => [
                     'Accept' => 'application/json',
                 ],
                 'timeout' => 10,
             ]);
 
-            if ($response->getStatusCode() !== 200) {
-                return null;
-            }
+            if ($response->getStatusCode() !== 200) return null;
 
             return $response->toArray();
         } catch (\Throwable) {
@@ -77,16 +75,14 @@ class BusTrackerClient
     public function getRoutePath(string $pathRef): ?array
     {
         try {
-            $response = $this->httpClient->request('GET', "https://bus-tracker.fr/api/paths/{$pathRef}", [
+            $response = $this->httpClient->request('GET', self::BASE_URL . "paths/{$pathRef}", [
                 'headers' => [
                     'Accept' => 'application/json',
                 ],
                 'timeout' => 10,
             ]);
 
-            if ($response->getStatusCode() !== 200) {
-                return null;
-            }
+            if ($response->getStatusCode() !== 200) return null;
 
             return $response->toArray();
         } catch (\Throwable) {
