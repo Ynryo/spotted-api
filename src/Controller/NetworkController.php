@@ -28,7 +28,7 @@ class NetworkController extends AbstractController
         return $this->json($networks);
     }
 
-    #[Route('/networks/{$networkId}', name: 'app_network_details', requirements: ['id' => '\d+'], methods: ['GET'])]
+    #[Route('/networks/{networkId}', name: 'app_network_details', requirements: ['networkId' => '\d+'], methods: ['GET'])]
     #[OA\Tag(name: 'Networks')]
     #[OA\Get(summary: 'Détails d\'un réseau de transport.')]
     #[OA\Parameter(name: 'networkId', description: 'Identifiant unique du réseau de transport (ex: 1, 2, 3, ...)', in: 'path', required: true)]
@@ -48,7 +48,7 @@ class NetworkController extends AbstractController
         return $this->json($network);
     }
 
-    #[Route('/networks/{$networkId}/lines', name: 'app_network_lines', requirements: ['id' => '\d+'], methods: ['GET'])]
+    #[Route('/networks/{networkId}/lines', name: 'app_network_lines', requirements: ['networkId' => '\d+'], methods: ['GET'])]
     #[OA\Tag(name: 'Networks')]
     #[OA\Get(summary: 'Liste des lignes d\'un réseau.')]
     #[OA\Parameter(name: 'networkId', description: 'Identifiant unique du réseau de transport (ex: 1, 2, 3, ...)', in: 'path', required: true)]
@@ -59,7 +59,7 @@ class NetworkController extends AbstractController
         return $this->json([]);
     }
 
-    #[Route('/networks/{$networkId}/lines/{lineId}', name: 'app_network_line_details', requirements: ['id' => '\d+', 'lineId' => '\d+'], methods: ['GET'])]
+    #[Route('/networks/{networkId}/lines/{lineId}', name: 'app_network_line_details', requirements: ['networkId' => '\d+', 'lineId' => '\d+'], methods: ['GET'])]
     #[OA\Tag(name: 'Networks')]
     #[OA\Get(summary: 'Détails d\'une ligne d\'un réseau de transport.')]
     #[OA\Parameter(name: 'networkId', description: 'Identifiant unique du réseau de transport (ex: 1, 2, 3, ...)', in: 'path', required: true)]

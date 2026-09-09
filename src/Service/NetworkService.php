@@ -47,12 +47,13 @@ readonly class NetworkService
             return NetworkDetails::fromArray(json_decode($cachedNetwork, true));
         }
         $rawNetwork = $this->client->getNetwork($networkId);
-        if ($rawNetwork) $this->redis->set("network_{$networkId}", json_encode($rawNetwork), ['ex' => CacheTtl::LONG->value]);
+        if (!$rawNetwork) {
+            return null;
+        }
 
-        $network = NetworkDetails::fromArray($rawNetwork);
-        if ($network->id === $networkId) return $network;
+        $this->redis->set("network_{$networkId}", json_encode($rawNetwork), ['ex' => CacheTtl::LONG->value]);
 
-        return $network;
+        return NetworkDetails::fromArray($rawNetwork);
     }
 }
 
