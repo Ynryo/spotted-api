@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class JourneyController extends AbstractController
 {
-    #[Route('/journeys/{journeyId}', name: 'app_journey_details', requirements: ['id' => '[^/]+'], methods: ['GET'])]
+    #[Route('/journeys/{journeyId}', name: 'app_journey_details', requirements: ['journeyId' => '[^/]+'], methods: ['GET'])]
     #[OA\Tag(name: 'Journeys')]
     #[OA\Get(summary: 'Fiche détaillée d\'un trajet de véhicule (arrêts, horaires, retards, polyline GPS)')]
     #[OA\Parameter(name: 'journeyId', description: 'Identifiant unique du trajet (ex: SNCF-... ou TCL:...)', in: 'path', required: true)]
@@ -22,7 +22,7 @@ class JourneyController extends AbstractController
         $journey = $service->getJourneyDetails($journeyId);
 
         if ($journey) return $this->json($journey);
-        
+
         return $this->json([
             'error' => 'Vehicle journey not found',
             'id' => $journeyId,

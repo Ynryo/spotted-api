@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Throwable;
 
 class BusTrackerClient
 {
@@ -62,7 +63,7 @@ class BusTrackerClient
             if ($response->getStatusCode() !== 200) return null;
 
             return $response->toArray();
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return null;
         }
     }
@@ -85,7 +86,7 @@ class BusTrackerClient
             if ($response->getStatusCode() !== 200) return null;
 
             return $response->toArray();
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return null;
         }
     }
@@ -106,7 +107,7 @@ class BusTrackerClient
             if ($response->getStatusCode() !== 200) return null;
 
             return $response->toArray();
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return null;
         }
     }
@@ -128,7 +129,28 @@ class BusTrackerClient
             if ($response->getStatusCode() !== 200) return null;
 
             return $response->toArray();
-        } catch (\Throwable) {
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>|null
+     */
+    public function getNetworkLines(int $networkId): ?array
+    {
+        try {
+            $response = $this->httpClient->request('GET', self::BASE_URL . "networks/{$networkId}?withDetails=true", [
+                'headers' => [
+                    'Accept' => 'application/json',
+                ],
+                'timeout' => 10,
+            ]);
+
+            if ($response->getStatusCode() !== 200) return null;
+
+            return $response->toArray();
+        } catch (Throwable) {
             return null;
         }
     }

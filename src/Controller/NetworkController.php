@@ -35,7 +35,6 @@ class NetworkController extends AbstractController
     public function getNetwork(int $networkId, NetworkService $networkService): JsonResponse
     {
         $network = $networkService->getNetwork($networkId);
-
         if ($network) return $this->json($network);
 
         return $this->json([
@@ -49,10 +48,16 @@ class NetworkController extends AbstractController
     #[OA\Get(summary: 'Liste des lignes d\'un réseau.')]
     #[OA\Parameter(name: 'networkId', description: 'Identifiant unique du réseau de transport (ex: 1, 2, 3, ...)', in: 'path', required: true)]
     #[OA\Response(response: 200, description: 'Liste des lignes du réseau de transport.')]
-    #[OA\Response(response: 404, description: 'Réseau de transport non trouvé')]
-    public function getNetworkLines(int $networkId): JsonResponse
+    #[OA\Response(response: 404, description: 'Lignes de transport non trouvées')]
+    public function getNetworkLines(int $networkId, NetworkService $networkService): JsonResponse
     {
-        return $this->json([]);
+        $networkLines = $networkService->getNetworkLines($networkId);
+        if ($networkLines) return $this->json($networkLines);
+
+        return $this->json([
+            'error' => 'Network lines not found.',
+            'id' => $networkId,
+        ], Response::HTTP_NOT_FOUND);
     }
 
     #[Route('/networks/{networkId}/lines/{lineId}', name: 'app_network_line_details', requirements: ['networkId' => '\d+', 'lineId' => '\d+'], methods: ['GET'])]

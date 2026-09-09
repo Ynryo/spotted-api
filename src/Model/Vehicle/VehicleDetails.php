@@ -6,7 +6,7 @@ readonly class VehicleDetails
 {
     /**
      * @param VehicleStopDetails[] $stops
-     * @param array<array{lat: float, lon: float}> $path
+     * @param array<int, array{latitude: float|null, longitude: float|null, distance?: float|null}> $path
      */
     public function __construct(
         public string           $id,

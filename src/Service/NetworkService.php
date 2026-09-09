@@ -38,6 +38,10 @@ readonly class NetworkService
         return $networks;
     }
 
+    /**
+     * @param int $networkId
+     * @return NetworkDetails|null
+     */
     public function getNetwork(int $networkId): ?NetworkDetails
     {
         $cachedNetwork = $this->redis->get("network_{$networkId}");
@@ -49,6 +53,23 @@ readonly class NetworkService
         if (!$rawNetwork) return null;
 
         return NetworkDetails::fromArray($rawNetwork);
+    }
+
+    /**
+     * @param int $networkId
+     * @return array<int, array<string, mixed>>|null
+     */
+    public function getNetworkLines(int $networkId): ?array
+    {
+        $cachedNetworkLines = $this->redis->get("network_lines_{$networkId}");
+        if ($cachedNetworkLines) return json_decode($cachedNetworkLines, true);
+
+        $rawNetworkLines = $this->client->getNetworkLines($networkId);
+        if (!$rawNetworkLines) return null;
+
+        $this->redis->set("network_lines_{$networkId}", json_encode($rawNetworkLines), ['ex' => CacheTtl::LONG->value]);
+
+        return $rawNetworkLines;
     }
 }
 
