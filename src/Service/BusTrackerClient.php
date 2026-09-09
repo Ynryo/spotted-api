@@ -89,4 +89,47 @@ class BusTrackerClient
             return null;
         }
     }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function getNetworks(): ?array
+    {
+        try {
+            $response = $this->httpClient->request('GET', "https://bus-tracker.fr/api/networks", [
+                'headers' => [
+                    'Accept' => 'application/json',
+                ],
+                'timeout' => 10,
+            ]);
+
+            if ($response->getStatusCode() !== 200) return null;
+
+            return $response->toArray();
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * @param int $networkId
+     * @return array<string, mixed>|null
+     */
+    public function getNetwork(int $networkId): ?array
+    {
+        try {
+            $response = $this->httpClient->request('GET', "https://bus-tracker.fr/api/networks/{$networkId}", [
+                'headers' => [
+                    'Accept' => 'application/json',
+                ],
+                'timeout' => 10,
+            ]);
+
+            if ($response->getStatusCode() !== 200) return null;
+
+            return $response->toArray();
+        } catch (\Throwable) {
+            return null;
+        }
+    }
 }

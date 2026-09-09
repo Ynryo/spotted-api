@@ -13,34 +13,32 @@ readonly class VehicleDetailsService
     public function __construct(
         private BusTrackerClient $client,
         private Redis            $redis
-    ) {}
+    )
+    {
+    }
 
-    public function getDetails(string $id): ?VehicleDetails
+    public function getDetails(string $vehicleJourney): ?VehicleDetails
     {
         // 1. Récupération du trajet (cache court 15s dans Redis)
-        $journeyCacheKey = "vehicle:journey:{$id}";
-        $cachedJourney = $this->redis->get($journeyCacheKey);
+        $cachedJourney = $this->redis->get($vehicleJourney);
 
         if ($cachedJourney) {
             $journey = json_decode($cachedJourney, true);
         } else {
-            $journey = $this->client->getVehicleJourney($id);
+            $journey = $this->client->getVehicleJourney($vehicleJourney);
             if ($journey) {
-                $this->redis->set($journeyCacheKey, json_encode($journey), ['ex' => CacheTtl::REALTIME->value]);
+                $this->redis->set($vehicleJourney, json_encode($journey), ['ex' => CacheTtl::REALTIME->value]);
             }
         }
 
-        if (!$journey) {
-            return null;
-        }
+        if (!$journey) return null;
 
         // 2. Récupération du tracé géographique (cache long 24h dans Redis)
         $pathPoints = [];
         $pathRef = $journey['pathRef'] ?? null;
 
         if ($pathRef) {
-            $pathCacheKey = "path:{$pathRef}";
-            $cachedPath = $this->redis->get($pathCacheKey);
+            $cachedPath = $this->redis->get($pathRef);
 
             if ($cachedPath) {
                 $pathPoints = json_decode($cachedPath, true);
@@ -56,7 +54,7 @@ readonly class VehicleDetailsService
                         ];
                     }, $rawPoints);
 
-                    $this->redis->set($pathCacheKey, json_encode($pathPoints), ['ex' => CacheTtl::LONG->value]);
+                    $this->redis->set($pathRef, json_encode($pathPoints), ['ex' => CacheTtl::LONG->value]);
                 }
             }
         }
@@ -73,12 +71,12 @@ readonly class VehicleDetailsService
             : null;
 
         return new VehicleDetails(
-            id: $journey['id'] ?? $id,
-            lineId: isset($journey['lineId']) ? (int) $journey['lineId'] : null,
+            id: $journey['id'] ?? $vehicleJourney,
+            lineId: isset($journey['lineId']) ? (int)$journey['lineId'] : null,
             destination: $journey['destination'] ?? null,
             stops: $stops,
             position: $position,
-            networkId: isset($journey['networkId']) ? (int) $journey['networkId'] : null,
+            networkId: isset($journey['networkId']) ? (int)$journey['networkId'] : null,
             serviceDate: $journey['serviceDate'] ?? null,
             pathRef: $pathRef,
             path: $pathPoints,

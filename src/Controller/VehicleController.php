@@ -15,7 +15,7 @@ class VehicleController extends AbstractController
     #[Route('/vehicles/{id}/details', name: 'app_vehicles_details_alias', requirements: ['id' => '[^/]+'], methods: ['GET'])]
     #[OA\Tag(name: 'Vehicles')]
     #[OA\Get(summary: 'Fiche détaillée d\'un trajet de véhicule (arrêts, horaires, retards, polyline GPS)')]
-    #[OA\Parameter(name: 'id', in: 'path', description: 'Identifiant unique du trajet (ex: SNCF-... ou TCL:...)', required: true)]
+    #[OA\Parameter(name: 'id', description: 'Identifiant unique du trajet (ex: SNCF-... ou TCL:...)', in: 'path', required: true)]
     #[OA\Response(response: 200, description: 'Détails complets du véhicule et de son parcours')]
     #[OA\Response(response: 404, description: 'Trajet ou véhicule non trouvé')]
     public function getVehicleDetails(string $id, VehicleDetailsService $service): JsonResponse
