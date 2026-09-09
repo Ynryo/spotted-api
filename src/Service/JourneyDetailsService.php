@@ -8,7 +8,7 @@ use App\Model\Vehicle\VehiclePosition;
 use App\Model\Vehicle\VehicleStopDetails;
 use Redis;
 
-readonly class VehicleDetailsService
+readonly class JourneyDetailsService
 {
     public function __construct(
         private BusTrackerClient $client,
