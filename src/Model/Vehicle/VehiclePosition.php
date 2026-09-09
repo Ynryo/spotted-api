@@ -2,16 +2,16 @@
 
 namespace App\Model\Vehicle;
 
-class VehiclePosition
+readonly class VehiclePosition
 {
     public function __construct(
-        public readonly float $latitude,
-        public readonly float $longitude,
-        public readonly float $bearing = 0.0,
-        public readonly bool $atStop = false,
-        public readonly float $distanceTraveled = 0.0,
-        public readonly ?string $type = null,
-        public readonly ?string $recordedAt = null,
+        public float   $latitude,
+        public float   $longitude,
+        public float   $bearing = 0.0,
+        public bool    $atStop = false,
+        public float   $distanceTraveled = 0.0,
+        public ?string $type = null,
+        public ?string $recordedAt = null,
     ) {}
 
     /**

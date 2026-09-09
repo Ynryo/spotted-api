@@ -2,24 +2,24 @@
 
 namespace App\Model\Vehicle;
 
-class VehicleStopDetails
+readonly class VehicleStopDetails
 {
     /**
      * @param string[] $flags
      */
     public function __construct(
-        public readonly ?string $stopName,
-        public readonly ?int $stopOrder,
-        public readonly ?string $stopUIC,
-        public readonly ?string $aimedTime,
-        public readonly ?string $expectedTime,
-        public readonly int $delayMinutes,
-        public readonly string $callStatus,
-        public readonly ?float $distanceTraveled,
-        public readonly ?float $latitude,
-        public readonly ?float $longitude,
-        public readonly ?string $platformName = null,
-        public readonly array $flags = [],
+        public ?string $stopName,
+        public ?int    $stopOrder,
+        public ?string $stopUIC,
+        public ?string $aimedTime,
+        public ?string $expectedTime,
+        public int     $delayMinutes,
+        public string  $callStatus,
+        public ?float  $distanceTraveled,
+        public ?float  $latitude,
+        public ?float  $longitude,
+        public ?string $platformName = null,
+        public array   $flags = [],
     ) {}
 
     /**

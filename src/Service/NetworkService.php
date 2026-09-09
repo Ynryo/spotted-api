@@ -20,13 +20,11 @@ readonly class NetworkService
      */
     public function getNetworks(): ?array
     {
-        $cachedNetworks = $this->redis->get('networks');
         $networks = [];
+        $cachedNetworks = $this->redis->get('networks');
 
-        if ($cachedNetworks) {
-            $rawNetworks = json_decode($cachedNetworks, true);
-        } else {
-            //on get et on met en cache
+        if ($cachedNetworks) $rawNetworks = json_decode($cachedNetworks, true);
+        else {
             $rawNetworks = $this->client->getNetworks();
             if ($rawNetworks) $this->redis->set('networks', json_encode($rawNetworks), ['ex' => CacheTtl::LONG->value]);
         }
@@ -43,15 +41,12 @@ readonly class NetworkService
     public function getNetwork(int $networkId): ?NetworkDetails
     {
         $cachedNetwork = $this->redis->get("network_{$networkId}");
-        if ($cachedNetwork) {
-            return NetworkDetails::fromArray(json_decode($cachedNetwork, true));
-        }
-        $rawNetwork = $this->client->getNetwork($networkId);
-        if (!$rawNetwork) {
-            return null;
-        }
+        if ($cachedNetwork) return NetworkDetails::fromArray(json_decode($cachedNetwork, true));
 
+        $rawNetwork = $this->client->getNetwork($networkId);
         $this->redis->set("network_{$networkId}", json_encode($rawNetwork), ['ex' => CacheTtl::LONG->value]);
+
+        if (!$rawNetwork) return null;
 
         return NetworkDetails::fromArray($rawNetwork);
     }

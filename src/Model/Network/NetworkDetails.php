@@ -2,25 +2,25 @@
 
 namespace App\Model\Network;
 
-class NetworkDetails
+readonly class NetworkDetails
 {
     /**
      * @param float[]|null $embedMapCenter
      */
     public function __construct(
-        public readonly int $id,
-        public readonly string $ref,
-        public readonly string $name,
-        public readonly ?string $authority,
-        public readonly string $countryCode,
-        public readonly string $timezone,
-        public readonly ?string $logoHref,
-        public readonly ?string $darkModeLogoHref,
-        public readonly ?string $color,
-        public readonly ?string $textColor,
-        public readonly bool $hasVehiclesFeature,
-        public readonly ?int $regionId,
-        public readonly ?array $embedMapCenter = null,
+        public int     $id,
+        public string  $ref,
+        public string  $name,
+        public ?string $authority,
+        public string  $countryCode,
+        public string  $timezone,
+        public ?string $logoHref,
+        public ?string $darkModeLogoHref,
+        public ?string $color,
+        public ?string $textColor,
+        public bool    $hasVehiclesFeature,
+        public ?int    $regionId,
+        public ?array  $embedMapCenter = null,
     ) {}
 
     /**
