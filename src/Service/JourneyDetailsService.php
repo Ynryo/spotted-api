@@ -21,7 +21,7 @@ readonly class JourneyDetailsService
 
     public function getJourneyDetails(string $vehicleJourney): ?VehicleDetails
     {
-        // 1. Récupération du trajet (cache court 15s dans Redis)
+        // Récupération du trajet (cache court 15s dans Redis)
         $cachedJourney = $this->redis->get($vehicleJourney);
 
         if ($cachedJourney) {
@@ -48,18 +48,14 @@ readonly class JourneyDetailsService
         $network = null;
         $networkId = $journey['networkId'] ?? null;
         if ($networkId) $network = $this->networkService->getNetwork($networkId);
-        //if (!$network) $network = NetworkDetails::fromArray($networkId);
-        if (!$network) $network = $networkId;
-;
 
-
-        // 3. Transformation POO des arrêts (calls)
+        // Transformation POO des arrêts (calls)
         $stops = [];
         foreach ($journey['calls'] ?? [] as $call) {
             $stops[] = VehicleStopDetails::fromArray($call);
         }
 
-        // 4. Transformation POO de la position
+        // Transformation POO de la position
         $position = !empty($journey['position'])
             ? VehiclePosition::fromArray($journey['position'])
             : null;
@@ -70,7 +66,7 @@ readonly class JourneyDetailsService
             destination: $journey['destination'] ?? null,
             stops: $stops,
             position: $position,
-            network: $network,
+            network: $network ?? ['id' => $networkId],
             serviceDate: $journey['serviceDate'] ?? null,
             pathRef: $pathRef,
             path: $pathPoints,
