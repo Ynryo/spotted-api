@@ -68,10 +68,10 @@ readonly class VehicleStopDetails
     private static function calculateStopTime(array $stop): int
     {
         if (isset($stop['expectedArrivalTime'], $stop['expectedTime'])) {
-            return max(0, strtotime($stop['expectedTime']) - strtotime($stop['expectedArrivalTime']));
+            return (int) round(max(0, strtotime($stop['expectedTime']) - strtotime($stop['expectedArrivalTime'])) / 60);
         }
         if (isset($stop['aimedArrivalTime'], $stop['aimedTime'])) {
-            return max(0, strtotime($stop['aimedTime']) - strtotime($stop['aimedArrivalTime']));
+            return (int) round(max(0, strtotime($stop['aimedTime']) - strtotime($stop['aimedArrivalTime'])) / 60);
         }
         return 0;
     }
