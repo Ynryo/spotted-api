@@ -19,13 +19,11 @@ class NetworkController extends AbstractController
     {
         $networks = $networkService->getNetworks();
 
-        if (!$networks) {
-            return $this->json([
-                'error' => 'No networks found.',
-            ], Response::HTTP_NOT_FOUND);
-        }
+        if ($networks) return $this->json($networks);
 
-        return $this->json($networks);
+        return $this->json([
+            'error' => 'No networks found.',
+        ], Response::HTTP_NOT_FOUND);
     }
 
     #[Route('/networks/{networkId}', name: 'app_network_details', requirements: ['networkId' => '\d+'], methods: ['GET'])]
@@ -38,14 +36,12 @@ class NetworkController extends AbstractController
     {
         $network = $networkService->getNetwork($networkId);
 
-        if (!$network) {
-            return $this->json([
-                'error' => 'Network not found.',
-                'id' => $networkId,
-            ], Response::HTTP_NOT_FOUND);
-        }
+        if ($network) return $this->json($network);
 
-        return $this->json($network);
+        return $this->json([
+            'error' => 'Network not found.',
+            'id' => $networkId,
+        ], Response::HTTP_NOT_FOUND);
     }
 
     #[Route('/networks/{networkId}/lines', name: 'app_network_lines', requirements: ['networkId' => '\d+'], methods: ['GET'])]
