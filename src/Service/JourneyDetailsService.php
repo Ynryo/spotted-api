@@ -13,7 +13,8 @@ readonly class JourneyDetailsService
     public function __construct(
         private BusTrackerClient $client,
         private Redis            $redis,
-        private PathService      $pathService
+        private PathService      $pathService,
+        private NetworkService   $networkService
     )
     {
     }
@@ -34,7 +35,7 @@ readonly class JourneyDetailsService
 
         if (!$journey) return null;
 
-        // 2. Récupération du tracé géographique via PathService (cache long)
+        // Path
         $pathPoints = [];
         $pathRef = $journey['pathRef'] ?? null;
 
@@ -42,6 +43,15 @@ readonly class JourneyDetailsService
             $path = $this->pathService->getPath($pathRef);
             $pathPoints = $path ? $path->points : [];
         }
+
+        // Network
+        $network = null;
+        $networkId = $journey['networkId'] ?? null;
+        if ($networkId) $network = $this->networkService->getNetwork($networkId);
+        //if (!$network) $network = NetworkDetails::fromArray($networkId);
+        if (!$network) $network = $networkId;
+;
+
 
         // 3. Transformation POO des arrêts (calls)
         $stops = [];
@@ -60,7 +70,7 @@ readonly class JourneyDetailsService
             destination: $journey['destination'] ?? null,
             stops: $stops,
             position: $position,
-            networkId: isset($journey['networkId']) ? (int)$journey['networkId'] : null,
+            network: $network,
             serviceDate: $journey['serviceDate'] ?? null,
             pathRef: $pathRef,
             path: $pathPoints,
