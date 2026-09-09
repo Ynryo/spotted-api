@@ -12,12 +12,13 @@ readonly class JourneyDetailsService
 {
     public function __construct(
         private BusTrackerClient $client,
-        private Redis            $redis
+        private Redis            $redis,
+        private PathService      $pathService
     )
     {
     }
 
-    public function getDetails(string $vehicleJourney): ?VehicleDetails
+    public function getJourneyDetails(string $vehicleJourney): ?VehicleDetails
     {
         // 1. Récupération du trajet (cache court 15s dans Redis)
         $cachedJourney = $this->redis->get($vehicleJourney);
@@ -33,30 +34,13 @@ readonly class JourneyDetailsService
 
         if (!$journey) return null;
 
-        // 2. Récupération du tracé géographique (cache long 24h dans Redis)
+        // 2. Récupération du tracé géographique via PathService (cache long)
         $pathPoints = [];
         $pathRef = $journey['pathRef'] ?? null;
 
         if ($pathRef) {
-            $cachedPath = $this->redis->get($pathRef);
-
-            if ($cachedPath) {
-                $pathPoints = json_decode($cachedPath, true);
-            } else {
-                $pathData = $this->client->getRoutePath($pathRef);
-                $rawPoints = $pathData['p'] ?? $pathData['path'] ?? [];
-
-                if (!empty($rawPoints)) {
-                    $pathPoints = array_map(function ($point) {
-                        return [
-                            'latitude' => $point[0] ?? null,
-                            'longitude' => $point[1] ?? null,
-                        ];
-                    }, $rawPoints);
-
-                    $this->redis->set($pathRef, json_encode($pathPoints), ['ex' => CacheTtl::LONG->value]);
-                }
-            }
+            $path = $this->pathService->getPath($pathRef);
+            $pathPoints = $path ? $path->points : [];
         }
 
         // 3. Transformation POO des arrêts (calls)

@@ -19,7 +19,7 @@ class JourneyController extends AbstractController
     #[OA\Response(response: 404, description: 'Trajet ou véhicule non trouvé')]
     public function getJourneyDetails(string $journeyId, JourneyDetailsService $service): JsonResponse
     {
-        $journey = $service->getDetails($journeyId);
+        $journey = $service->getJourneyDetails($journeyId);
 
         if ($journey) return $this->json($journey);
         
