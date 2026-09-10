@@ -13,6 +13,7 @@ readonly class VehicleStopDetails
         public ?string $stopUIC,
         public ?string $arrivalAimedTime,
         public ?string $arrivalExpectedTime,
+        public int     $arrivalTimeDifference,
         public ?int    $stopDuration,
         public ?string $departureAimedTime,
         public ?string $departureExpectedTime,
@@ -48,10 +49,11 @@ readonly class VehicleStopDetails
             stopUIC: $stopUIC,
             arrivalAimedTime: $call['aimedArrivalTime'] ?? null,
             arrivalExpectedTime: $call['expectedArrivalTime'] ?? null,
+            arrivalTimeDifference: self::calculateTimeDifference($call['expectedArrivalTime'], $call['aimedArrivalTime']),
             stopDuration: self::calculateStopTime($call),
             departureAimedTime: $call['aimedTime'] ?? null,
             departureExpectedTime: $call['expectedTime'] ?? null,
-            departureTimeDifference: self::calculateTimeDifference($call),
+            departureTimeDifference: self::calculateTimeDifference($call['expectedTime'], $call['aimedTime']),
             callStatus: $call['callStatus'] ?? 'SCHEDULED',
             distanceTraveled: isset($call['distanceTraveled']) ? (float)$call['distanceTraveled'] : null,
             latitude: isset($call['latitude']) ? (float)$call['latitude'] : null,
@@ -80,10 +82,10 @@ readonly class VehicleStopDetails
      * @param array<string, mixed> $stop
      * @return int
      */
-    private static function calculateTimeDifference(array $stop): int
+    private static function calculateTimeDifference(string $expected, string $aimed): int
     {
-        if (isset($stop['aimedTime'], $stop['expectedTime'])) {
-            return (int) round((strtotime($stop['expectedTime']) - strtotime($stop['aimedTime'])) / 60);
+        if (isset($expected, $aimed)) {
+            return (int) round((strtotime($expected) - strtotime($aimed)) / 60);
         }
         return 0;
     }
