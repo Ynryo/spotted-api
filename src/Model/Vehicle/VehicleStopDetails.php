@@ -49,8 +49,8 @@ readonly class VehicleStopDetails
         $expectedDeparture = $stop['expectedTime'] ?? null;
 
         $platform = (!empty($stop['platformName']))
-            ? VehicleStopPlatform::fromArray($stop)
-            : $guessedPlatform;
+            ? VehicleStopPlatform::fromArray($stop) //bt
+            : $guessedPlatform; //ct
 
         return new self(
             stopName: $stop['stopName'] ?? null,

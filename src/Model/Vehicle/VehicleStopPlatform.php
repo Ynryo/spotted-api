@@ -18,7 +18,7 @@ readonly class VehicleStopPlatform
     public static function fromArray(array $data): self
     {
         return new self(
-            name: $data['platform'] ?? $data['platformName'] ?? 'N/A',
+            name: $data['platformName'] ?? $data['platform'] ?? 'N/A',
             percentage: $data['percentage'] ?? 100,
         );
     }

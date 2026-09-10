@@ -24,10 +24,15 @@ readonly class PlatformService
     {
         $platform = $this->redis->get("platform:$stopUIC:$trainNum");
         if (!$platform) {
-            $platformData = $this->client->guessPlatform($stopUIC, $trainNum);
-            if (!$platformData) {
-                return null;
+            $responsesPlatform = $this->client->guessPlatform($stopUIC, $trainNum);
+            $platformData = null;
+            foreach($responsesPlatform as $responsePlatform) {
+                if ($responsePlatform['percentage'] > $platformData['percentage']) {
+                    $platformData = $responsePlatform;
+                }
             }
+            if (!$platformData) return null;
+
             $this->redis->set("platform:$stopUIC:$trainNum", json_encode($platformData), ['ex' => CacheTtl::REALTIME->value]);
             return VehicleStopPlatform::fromArray($platformData);
         }
