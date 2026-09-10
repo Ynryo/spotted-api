@@ -70,9 +70,9 @@ readonly class VehicleStopDetails
 
     /**
      * @param array<string, mixed> $stop
-     * @return int
+     * @return int|null
      */
-    private static function calculateStopTime(array $stop): int
+    private static function calculateStopTime(array $stop): int|null
     {
         if (isset($stop['expectedArrivalTime'], $stop['expectedTime'])) {
             return (int) round(max(0, strtotime($stop['expectedTime']) - strtotime($stop['expectedArrivalTime'])) / 60);
@@ -80,20 +80,20 @@ readonly class VehicleStopDetails
         if (isset($stop['aimedArrivalTime'], $stop['aimedTime'])) {
             return (int) round(max(0, strtotime($stop['aimedTime']) - strtotime($stop['aimedArrivalTime'])) / 60);
         }
-        return 0;
+        return null;
     }
 
     /**
      * @param string|null $expected
      * @param string|null $aimed
-     * @return int
+     * @return int|null
      */
-    private static function calculateTimeDifference(?string $expected, ?string $aimed): int
+    private static function calculateTimeDifference(?string $expected, ?string $aimed): int|null
     {
         if ($expected && $aimed) {
             return (int) round((strtotime($expected) - strtotime($aimed)) / 60);
         }
 
-        return 0;
+        return null;
     }
 }
