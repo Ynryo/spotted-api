@@ -43,17 +43,22 @@ readonly class VehicleStopDetails
             }
         }
 
+        $aimedArrival = $call['aimedArrivalTime'] ?? null;
+        $expectedArrival = $call['expectedArrivalTime'] ?? null;
+        $aimedDeparture = $call['aimedTime'] ?? null;
+        $expectedDeparture = $call['expectedTime'] ?? null;
+
         return new self(
             stopName: $call['stopName'] ?? null,
             stopOrder: isset($call['stopOrder']) ? (int)$call['stopOrder'] : null,
             stopUIC: $stopUIC,
-            arrivalAimedTime: $call['aimedArrivalTime'] ?? null,
-            arrivalExpectedTime: $call['expectedArrivalTime'] ?? null,
-            arrivalTimeDifference: self::calculateTimeDifference($call['expectedArrivalTime'], $call['aimedArrivalTime']),
+            arrivalAimedTime: $aimedArrival,
+            arrivalExpectedTime: $expectedArrival,
+            arrivalTimeDifference: self::calculateTimeDifference($expectedArrival, $aimedArrival),
             stopDuration: self::calculateStopTime($call),
-            departureAimedTime: $call['aimedTime'] ?? null,
-            departureExpectedTime: $call['expectedTime'] ?? null,
-            departureTimeDifference: self::calculateTimeDifference($call['expectedTime'], $call['aimedTime']),
+            departureAimedTime: $aimedDeparture,
+            departureExpectedTime: $expectedDeparture,
+            departureTimeDifference: self::calculateTimeDifference($expectedDeparture, $aimedDeparture),
             callStatus: $call['callStatus'] ?? 'SCHEDULED',
             distanceTraveled: isset($call['distanceTraveled']) ? (float)$call['distanceTraveled'] : null,
             latitude: isset($call['latitude']) ? (float)$call['latitude'] : null,
@@ -79,12 +84,16 @@ readonly class VehicleStopDetails
     }
 
     /**
-     * @param string $expected
-     * @param string $aimed
+     * @param string|null $expected
+     * @param string|null $aimed
      * @return int
      */
-    private static function calculateTimeDifference(string $expected, string $aimed): int
+    private static function calculateTimeDifference(?string $expected, ?string $aimed): int
     {
-        return (int) round((strtotime($expected) - strtotime($aimed)) / 60);
+        if ($expected && $aimed) {
+            return (int) round((strtotime($expected) - strtotime($aimed)) / 60);
+        }
+
+        return 0;
     }
 }
