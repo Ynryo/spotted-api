@@ -13,7 +13,7 @@ readonly class VehicleStopDetails
         public ?string $stopUIC,
         public ?string $arrivalAimedTime,
         public ?string $arrivalExpectedTime,
-        public int     $arrivalTimeDifference,
+        public ?int     $arrivalTimeDifference,
         public ?int    $stopDuration,
         public ?string $departureAimedTime,
         public ?string $departureExpectedTime,
