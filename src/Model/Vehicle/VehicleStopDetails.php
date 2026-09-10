@@ -79,14 +79,12 @@ readonly class VehicleStopDetails
     }
 
     /**
-     * @param array<string, mixed> $stop
+     * @param string $expected
+     * @param string $aimed
      * @return int
      */
     private static function calculateTimeDifference(string $expected, string $aimed): int
     {
-        if (isset($expected, $aimed)) {
-            return (int) round((strtotime($expected) - strtotime($aimed)) / 60);
-        }
-        return 0;
+        return (int) round((strtotime($expected) - strtotime($aimed)) / 60);
     }
 }
