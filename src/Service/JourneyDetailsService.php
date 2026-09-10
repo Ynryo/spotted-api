@@ -14,7 +14,8 @@ readonly class JourneyDetailsService
         private BusTrackerClient $client,
         private Redis            $redis,
         private PathService      $pathService,
-        private NetworkService   $networkService
+        private NetworkService   $networkService,
+        private PlatformService  $platformService,
     )
     {
     }
@@ -51,8 +52,23 @@ readonly class JourneyDetailsService
 
         // Transformation POO des arrêts (calls)
         $stops = [];
+        $trainNum = $journey['vehicle']['number'] ?? null;
+
         foreach ($journey['calls'] ?? [] as $call) {
-            $stops[] = VehicleStopDetails::fromArray($call);
+            $guessedPlatform = null;
+
+            if (empty($call['platformName']) && $trainNum) {
+                $stopRef = $call['stopRef'] ?? null;
+                if ($stopRef && str_contains($stopRef, 'StopPoint')) {
+                    $parts = explode(':', $stopRef);
+                    if (isset($parts[2])) {
+                        $stopUIC = substr($parts[2], 0, 7);
+                        $guessedPlatform = $this->platformService->guessPlatform($stopUIC, (string)$trainNum);
+                    }
+                }
+            }
+
+            $stops[] = VehicleStopDetails::fromArray($call, $guessedPlatform);
         }
 
         // Transformation POO de la position

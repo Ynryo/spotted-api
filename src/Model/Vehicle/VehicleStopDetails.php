@@ -31,7 +31,7 @@ readonly class VehicleStopDetails
     /**
      * @param array<string, mixed> $stop
      */
-    public static function fromArray(array $stop): self
+    public static function fromArray(array $stop, ?VehicleStopPlatform $guessedPlatform = null): self
     {
         $stopRef = $stop['stopRef'] ?? null;
         $stopUIC = null;
@@ -48,7 +48,9 @@ readonly class VehicleStopDetails
         $aimedDeparture = $stop['aimedTime'] ?? null;
         $expectedDeparture = $stop['expectedTime'] ?? null;
 
-        $platform = (isset($stop['platformName']) && $stop['platformName'] != null) ? VehicleStopPlatform::fromArray($stop) : null;
+        $platform = (!empty($stop['platformName']))
+            ? VehicleStopPlatform::fromArray($stop)
+            : $guessedPlatform;
 
         return new self(
             stopName: $stop['stopName'] ?? null,
