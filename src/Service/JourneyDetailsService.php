@@ -63,6 +63,7 @@ readonly class JourneyDetailsService
         return new VehicleDetails(
             id: $journey['id'] ?? $vehicleJourney,
             lineId: isset($journey['lineId']) ? (int)$journey['lineId'] : null,
+            vehicleNumber: $journey['vehicle']['number'] ?? null,
             destination: $journey['destination'] ?? null,
             stops: $stops,
             position: $position,
@@ -70,7 +71,6 @@ readonly class JourneyDetailsService
             serviceDate: $journey['serviceDate'] ?? null,
             pathRef: $pathRef,
             path: $pathPoints,
-            vehicleNumber: $journey['vehicle']['number'] ?? null,
             updatedAt: $journey['updatedAt'] ?? null,
             datetime: date('Y-m-d H:i:s'),
         );

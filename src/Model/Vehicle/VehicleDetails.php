@@ -14,6 +14,7 @@ readonly class VehicleDetails
     public function __construct(
         public string           $id,
         public ?int             $lineId,
+        public ?string          $vehicleNumber,
         public ?string          $destination,
         public array            $stops,
         public ?VehiclePosition $position,
@@ -21,7 +22,6 @@ readonly class VehicleDetails
         public ?string          $serviceDate,
         public ?string          $pathRef,
         public array            $path,
-        public ?string          $vehicleNumber,
         public ?string          $updatedAt,
         public string           $datetime,
     )
