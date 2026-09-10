@@ -8,32 +8,32 @@ readonly class VehicleStopDetails
      * @param string[] $flags
      */
     public function __construct(
-        public ?string $stopName,
-        public ?int    $stopOrder,
-        public ?string $stopUIC,
-        public ?string $arrivalAimedTime,
-        public ?string $arrivalExpectedTime,
-        public ?int     $arrivalTimeDifference,
-        public ?int    $stopDuration,
-        public ?string $departureAimedTime,
-        public ?string $departureExpectedTime,
-        public int     $departureTimeDifference,
-        public string  $callStatus,
-        public ?float  $distanceTraveled,
-        public ?float  $latitude,
-        public ?float  $longitude,
-        public ?string $platformName = null,
-        public array   $flags = [],
+        public ?string              $stopName,
+        public ?int                 $stopOrder,
+        public ?string              $stopUIC,
+        public ?string              $arrivalAimedTime,
+        public ?string              $arrivalExpectedTime,
+        public ?int                 $arrivalTimeDifference,
+        public ?int                 $stopDuration,
+        public ?string              $departureAimedTime,
+        public ?string              $departureExpectedTime,
+        public int                  $departureTimeDifference,
+        public string               $callStatus,
+        public ?float               $distanceTraveled,
+        public ?float               $latitude,
+        public ?float               $longitude,
+        public ?VehicleStopPlatform $platform,
+        public array                $flags = [],
     )
     {
     }
 
     /**
-     * @param array<string, mixed> $call
+     * @param array<string, mixed> $stop
      */
-    public static function fromArray(array $call): self
+    public static function fromArray(array $stop): self
     {
-        $stopRef = $call['stopRef'] ?? null;
+        $stopRef = $stop['stopRef'] ?? null;
         $stopUIC = null;
 
         if ($stopRef && str_contains($stopRef, 'StopPoint')) {
@@ -43,28 +43,30 @@ readonly class VehicleStopDetails
             }
         }
 
-        $aimedArrival = $call['aimedArrivalTime'] ?? null;
-        $expectedArrival = $call['expectedArrivalTime'] ?? null;
-        $aimedDeparture = $call['aimedTime'] ?? null;
-        $expectedDeparture = $call['expectedTime'] ?? null;
+        $aimedArrival = $stop['aimedArrivalTime'] ?? null;
+        $expectedArrival = $stop['expectedArrivalTime'] ?? null;
+        $aimedDeparture = $stop['aimedTime'] ?? null;
+        $expectedDeparture = $stop['expectedTime'] ?? null;
+
+        $platform = (isset($stop['platformName']) && $stop['platformName'] != null) ? VehicleStopPlatform::fromArray($stop) : null;
 
         return new self(
-            stopName: $call['stopName'] ?? null,
-            stopOrder: isset($call['stopOrder']) ? (int)$call['stopOrder'] : null,
+            stopName: $stop['stopName'] ?? null,
+            stopOrder: isset($stop['stopOrder']) ? (int)$stop['stopOrder'] : null,
             stopUIC: $stopUIC,
             arrivalAimedTime: $aimedArrival,
             arrivalExpectedTime: $expectedArrival,
             arrivalTimeDifference: self::calculateTimeDifference($expectedArrival, $aimedArrival),
-            stopDuration: self::calculateStopTime($call),
+            stopDuration: self::calculateStopTime($stop),
             departureAimedTime: $aimedDeparture,
             departureExpectedTime: $expectedDeparture,
             departureTimeDifference: self::calculateTimeDifference($expectedDeparture, $aimedDeparture),
-            callStatus: $call['callStatus'] ?? 'SCHEDULED',
-            distanceTraveled: isset($call['distanceTraveled']) ? (float)$call['distanceTraveled'] : null,
-            latitude: isset($call['latitude']) ? (float)$call['latitude'] : null,
-            longitude: isset($call['longitude']) ? (float)$call['longitude'] : null,
-            platformName: $call['platformName'] ?? null,
-            flags: $call['flags'] ?? [],
+            callStatus: $stop['callStatus'] ?? 'SCHEDULED',
+            distanceTraveled: isset($stop['distanceTraveled']) ? (float)$stop['distanceTraveled'] : null,
+            latitude: isset($stop['latitude']) ? (float)$stop['latitude'] : null,
+            longitude: isset($stop['longitude']) ? (float)$stop['longitude'] : null,
+            platform: $platform,
+            flags: $stop['flags'] ?? [],
         );
     }
 
@@ -75,10 +77,10 @@ readonly class VehicleStopDetails
     private static function calculateStopTime(array $stop): int|null
     {
         if (isset($stop['expectedArrivalTime'], $stop['expectedTime'])) {
-            return (int) round(max(0, strtotime($stop['expectedTime']) - strtotime($stop['expectedArrivalTime'])) / 60);
+            return (int)round(max(0, strtotime($stop['expectedTime']) - strtotime($stop['expectedArrivalTime'])) / 60);
         }
         if (isset($stop['aimedArrivalTime'], $stop['aimedTime'])) {
-            return (int) round(max(0, strtotime($stop['aimedTime']) - strtotime($stop['aimedArrivalTime'])) / 60);
+            return (int)round(max(0, strtotime($stop['aimedTime']) - strtotime($stop['aimedArrivalTime'])) / 60);
         }
         return null;
     }
@@ -91,7 +93,7 @@ readonly class VehicleStopDetails
     private static function calculateTimeDifference(?string $expected, ?string $aimed): int|null
     {
         if ($expected && $aimed) {
-            return (int) round((strtotime($expected) - strtotime($aimed)) / 60);
+            return (int)round((strtotime($expected) - strtotime($aimed)) / 60);
         }
 
         return null;

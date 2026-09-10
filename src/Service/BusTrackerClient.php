@@ -20,7 +20,9 @@ class BusTrackerClient
 
     public function __construct(
         private readonly HttpClientInterface $httpClient
-    ) {}
+    )
+    {
+    }
 
     /**
      * Récupère le flux brut de tous les véhicules en circulation en France
