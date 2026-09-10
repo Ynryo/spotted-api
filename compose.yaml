@@ -42,6 +42,8 @@ services:
     networks:
       - spotted-network
     command: ["php", "bin/console", "app:sync-markers", "--watch"]
+    healthcheck:
+      disable: true
 
 networks:
   spotted-network:
