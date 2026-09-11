@@ -96,6 +96,27 @@ class BusTrackerClient
     /**
      * @return array<string, mixed>|null
      */
+    public function getRegions(): ?array
+    {
+        try {
+            $response = $this->httpClient->request('GET', self::BASE_URL . "regions", [
+                'headers' => [
+                    'Accept' => 'application/json',
+                ],
+                'timeout' => 10,
+            ]);
+
+            if ($response->getStatusCode() !== 200) return null;
+
+            return $response->toArray();
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
     public function getNetworks(): ?array
     {
         try {
