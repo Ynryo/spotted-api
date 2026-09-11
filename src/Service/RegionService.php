@@ -15,15 +15,6 @@ readonly class RegionService
     {
     }
 
-    public function getRegion(int $regionId): ?Region
-    {
-        $regions = $this->redis->get('regions');
-        if (!$regions) {
-            $regions = $this->getRegions();
-        }
-        return Region::fromArray($regions[$regionId]);
-    }
-
     /**
      * @return Region[]|null
      */
@@ -40,6 +31,21 @@ readonly class RegionService
             $regions[] = Region::fromArray($rawRegion);
         }
         return $regions;
+    }
+
+    /**
+     * @param int $regionId
+     * @return Region|null
+     */
+    public function getRegion(int $regionId): ?Region
+    {
+        $regions = $this->getRegions();
+
+        foreach ($regions as $region) {
+            if ($region->id == $regionId) return $region;
+        }
+
+        return null;
     }
 
 //    public function getRegionNetworks(int $regionId)
