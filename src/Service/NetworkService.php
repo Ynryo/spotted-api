@@ -20,17 +20,15 @@ readonly class NetworkService
      */
     public function getNetworks(): ?array
     {
-        $networks = [];
         $cachedNetworks = $this->redis->get('networks');
-
         if ($cachedNetworks) $rawNetworks = json_decode($cachedNetworks, true);
         else {
             $rawNetworks = $this->client->getNetworks();
-            if ($rawNetworks) $this->redis->set('networks', json_encode($rawNetworks), ['ex' => CacheTtl::LONG->value]);
+            $this->redis->set('networks', json_encode($rawNetworks), ['ex' => CacheTtl::LONG->value]);
         }
-
         if (!$rawNetworks) return null;
 
+        $networks = [];
         foreach ($rawNetworks as $rawNetwork) {
             $networks[] = NetworkDetails::fromArray($rawNetwork);
         }
@@ -42,17 +40,15 @@ readonly class NetworkService
      * @param int $networkId
      * @return NetworkDetails|null
      */
-    public function getNetwork(int $networkId): ?NetworkDetails
+    public function getNetwork(int $networkId): ?Network
     {
-        $cachedNetwork = $this->redis->get("network_{$networkId}");
-        if ($cachedNetwork) return NetworkDetails::fromArray(json_decode($cachedNetwork, true));
+        $networks = $this->getNetworks();
 
-        $rawNetwork = $this->client->getNetwork($networkId);
-        $this->redis->set("network_{$networkId}", json_encode($rawNetwork), ['ex' => CacheTtl::LONG->value]);
+        foreach ($networks as $network) {
+            if ($network->id == $networkId) return $network;
+        }
 
-        if (!$rawNetwork) return null;
-
-        return NetworkDetails::fromArray($rawNetwork);
+        return null;
     }
 
     /**

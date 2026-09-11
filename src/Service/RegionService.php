@@ -26,6 +26,8 @@ readonly class RegionService
             $rawRegions = $this->client->getRegions();
             $this->redis->set('regions', json_encode($rawRegions), ['ex' => CacheTtl::LONG->value]);
         }
+        if (!$rawRegions) return null;
+
         $regions = [];
         foreach ($rawRegions as $rawRegion) {
             $regions[] = Region::fromArray($rawRegion);
