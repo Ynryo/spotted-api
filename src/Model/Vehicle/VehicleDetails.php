@@ -2,7 +2,7 @@
 
 namespace App\Model\Vehicle;
 
-use App\Model\Network\NetworkDetails;
+use App\Model\Network\Network;
 
 readonly class VehicleDetails
 {
@@ -18,7 +18,7 @@ readonly class VehicleDetails
         public ?string          $destination,
         public array            $stops,
         public ?VehiclePosition $position,
-        public ?NetworkDetails  $network,
+        public ?Network         $network,
         public ?string          $serviceDate,
         public ?string          $pathRef,
         public array            $path,

@@ -2,7 +2,7 @@
 
 namespace App\Model\Network;
 
-readonly class NetworkDetails
+readonly class Network
 {
     /**
      * @param float[]|null $embedMapCenter

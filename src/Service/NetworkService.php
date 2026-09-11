@@ -3,7 +3,7 @@
 namespace App\Service;
 
 use App\Enum\CacheTtl;
-use App\Model\Network\NetworkDetails;
+use App\Model\Network\Network;
 use Redis;
 
 readonly class NetworkService
@@ -16,7 +16,7 @@ readonly class NetworkService
     }
 
     /**
-     * @return NetworkDetails[]|null
+     * @return Network[]|null
      */
     public function getNetworks(): ?array
     {
@@ -30,7 +30,7 @@ readonly class NetworkService
 
         $networks = [];
         foreach ($rawNetworks as $rawNetwork) {
-            $networks[] = NetworkDetails::fromArray($rawNetwork);
+            $networks[] = Network::fromArray($rawNetwork);
         }
 
         return $networks;
@@ -38,7 +38,7 @@ readonly class NetworkService
 
     /**
      * @param int $networkId
-     * @return NetworkDetails|null
+     * @return Network|null
      */
     public function getNetwork(int $networkId): ?Network
     {
