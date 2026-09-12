@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Enum\CacheTtl;
+use App\Model\Network\Network;
 use App\Model\Region\Region;
 use Redis;
 
@@ -10,6 +11,7 @@ readonly class RegionService
 {
     public function __construct(
         private BusTrackerClient $client,
+        private NetworkService   $networkService,
         private Redis            $redis
     )
     {
@@ -50,7 +52,22 @@ readonly class RegionService
         return null;
     }
 
-//    public function getRegionNetworks(int $regionId)
-//    {
-//    }
+    /**
+     * @param int $regionId
+     * @return Network[]|null
+     */
+    public function getRegionNetworks(int $regionId): ?array
+    {
+        $networks = $this->networkService->getNetworks();
+        if (!$networks) return null;
+
+        $regionNetworks = [];
+        foreach ($networks as $network) {
+            if ($network->regionId == $regionId) {
+                $regionNetworks[] = $network;
+            }
+        }
+
+        return $regionNetworks;
+    }
 }

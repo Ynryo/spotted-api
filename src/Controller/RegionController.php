@@ -51,8 +51,8 @@ class RegionController extends AbstractController
     #[OA\Response(response: 404, description: 'Réseaux de la région non trouvés')]
     public function getRegionNetworks(int $regionId, RegionService $regionService): JsonResponse
     {
-//        $regionNetworks = $regionService->getRegionNetworks($regionId);
-//        if ($regionNetworks) return $this->json($regionNetworks);
+        $regionNetworks = $regionService->getRegionNetworks($regionId);
+        if ($regionNetworks) return $this->json($regionNetworks);
 
         return $this->json([
             'error' => 'Region networks not found.',
