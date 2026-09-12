@@ -2,6 +2,7 @@
 
 namespace App\Model\Vehicle;
 
+use App\Enum\VehicleType;
 use App\Model\Network\Network;
 
 readonly class VehicleDetails
@@ -15,6 +16,7 @@ readonly class VehicleDetails
         public string           $id,
         public ?int             $lineId,
         public ?string          $vehicleNumber,
+        public ?VehicleType     $vehicleType,
         public ?string          $destination,
         public array            $stops,
         public ?VehiclePosition $position,

@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Enum\CacheTtl;
+use App\Enum\VehicleType;
 use App\Model\Vehicle\VehicleDetails;
 use App\Model\Vehicle\VehiclePosition;
 use App\Model\Vehicle\VehicleStopDetails;
@@ -76,10 +77,17 @@ readonly class JourneyDetailsService
             ? VehiclePosition::fromArray($journey['position'])
             : null;
 
+        if (str_starts_with($journey['id'], "SNCF")) {
+            $vehicleType = VehicleType::TRAIN;
+        } else {
+            $vehicleType = VehicleType::BUS;
+        }
+
         return new VehicleDetails(
             id: $journey['id'] ?? $vehicleJourney,
             lineId: isset($journey['lineId']) ? (int)$journey['lineId'] : null,
             vehicleNumber: $journey['vehicle']['number'] ?? null,
+            vehicleType: $vehicleType,
             destination: $journey['destination'] ?? null,
             stops: $stops,
             position: $position,
