@@ -17,7 +17,7 @@ readonly class VehicleStopDetails
         public ?int                 $stopDuration,
         public ?string              $departureAimedTime,
         public ?string              $departureExpectedTime,
-        public int                  $departureTimeDifference,
+        public ?int                 $departureTimeDifference,
         public string               $callStatus,
         public ?float               $distanceTraveled,
         public ?float               $latitude,
