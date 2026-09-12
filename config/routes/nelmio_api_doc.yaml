@@ -14,3 +14,7 @@ app.swagger_ui_alias:
     methods: GET
     defaults: { _controller: nelmio_api_doc.controller.swagger_ui }
 
+app.swagger_ui_alias_2:
+    path: /
+    methods: GET
+    defaults: { _controller: nelmio_api_doc.controller.swagger_ui }
