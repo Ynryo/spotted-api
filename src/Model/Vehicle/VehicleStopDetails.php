@@ -2,6 +2,9 @@
 
 namespace App\Model\Vehicle;
 
+use App\Enum\StopType;
+use App\Enum\VehicleType;
+
 readonly class VehicleStopDetails
 {
     /**
@@ -11,6 +14,7 @@ readonly class VehicleStopDetails
         public ?string              $stopName,
         public ?int                 $stopOrder,
         public ?string              $stopUIC,
+        public ?StopType            $stopType,
         public ?string              $arrivalAimedTime,
         public ?string              $arrivalExpectedTime,
         public ?int                 $arrivalTimeDifference,
@@ -31,7 +35,7 @@ readonly class VehicleStopDetails
     /**
      * @param array<string, mixed> $stop
      */
-    public static function fromArray(array $stop, ?VehicleStopPlatform $guessedPlatform = null): self
+    public static function fromArray(array $stop, ?VehicleStopPlatform $guessedPlatform = null,  VehicleType $vehicleType = VehicleType::BUS, int $stopCount = 0): self
     {
         $stopRef = $stop['stopRef'] ?? null;
         $stopUIC = null;
@@ -56,6 +60,7 @@ readonly class VehicleStopDetails
             stopName: $stop['stopName'] ?? null,
             stopOrder: isset($stop['stopOrder']) ? (int)$stop['stopOrder'] : null,
             stopUIC: $stopUIC,
+            stopType:  self::getStopType($stop, $vehicleType, $stopCount),
             arrivalAimedTime: $aimedArrival,
             arrivalExpectedTime: $expectedArrival,
             arrivalTimeDifference: self::calculateTimeDifference($expectedArrival, $aimedArrival),
@@ -99,5 +104,20 @@ readonly class VehicleStopDetails
         }
 
         return null;
+    }
+
+    /**
+     * @param array<string, mixed> $stop
+     * @return StopType|null
+     */
+    private static function getStopType(array $stop, VehicleType $vehicleType, int $stopCount): ?StopType
+    {
+        if (!isset($stop['stopOrder'])) return null;
+        $stopOrder = $stop['stopOrder'];
+        if ($vehicleType == VehicleType::TRAIN) $stopOrder = $stopOrder + 1;
+
+        if ($stopOrder == 1) return StopType::START;
+        else if ($stopOrder ==  $stopCount) return StopType::END;
+        else return StopType::INTERMEDIATE;
     }
 }

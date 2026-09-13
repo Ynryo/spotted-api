@@ -46,14 +46,15 @@ readonly class JourneyDetailsService
 
         // Transformation POO des arrêts (calls)
         $stops = [];
+        $stopsCount = count($rawJourney['calls'] ?? []);
 
         foreach ($rawJourney['calls'] ?? [] as $call) {
+            $guessedPlatform = null;
             if ($vehicleType == VehicleType::TRAIN && $vehicleNumber) {
-                $guessedPlatform = null;
                 $stopUIC = self::getStopUIC($call);
                 if ($stopUIC) $guessedPlatform = $this->platformService->guessPlatform($stopUIC, $vehicleNumber);
-                $stops[] = VehicleStopDetails::fromArray($call, $guessedPlatform);
-            } else $stops[] = VehicleStopDetails::fromArray($call);
+            }
+            $stops[] = VehicleStopDetails::fromArray($call, $guessedPlatform, $vehicleType,  $stopsCount);
         }
 
         return VehicleDetails::fromArray(

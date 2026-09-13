@@ -28,11 +28,6 @@ readonly class VehicleDetails
     {
     }
 
-    public function getStopsCount(): int
-    {
-        return count($this->stops);
-    }
-
     /**
      * @param array<string, mixed> $journey
      * @param VehicleStopDetails[] $stops
