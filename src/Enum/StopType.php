@@ -4,8 +4,8 @@ namespace App\Enum;
 
 enum StopType: string
 {
-    case START = "start";
-    CASE INTERMEDIATE = "intermediate";
-    case SPLIT = "split";
-    CASE END = "end";
+    case START = "START";
+    CASE INTERMEDIATE = "INTERMEDIATE";
+    case SPLIT = "SPLIT";
+    CASE END = "END";
 }
