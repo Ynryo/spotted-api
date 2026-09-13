@@ -38,12 +38,11 @@ readonly class JourneyDetailsService
         if (!$journey) return null;
 
         // Path
-        $pathPoints = [];
+        $path = null;
         $pathRef = $journey['pathRef'] ?? null;
 
         if ($pathRef) {
             $path = $this->pathService->getPath($pathRef);
-            $pathPoints = $path ? $path->points : [];
         }
 
         // Network
@@ -94,7 +93,7 @@ readonly class JourneyDetailsService
             network: $network ?? ['id' => $networkId],
             serviceDate: $journey['serviceDate'] ?? null,
             pathRef: $pathRef,
-            path: $pathPoints,
+            path: $path,
             updatedAt: $journey['updatedAt'] ?? null,
             datetime: date('Y-m-d H:i:s'),
         );

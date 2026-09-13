@@ -4,13 +4,13 @@ namespace App\Model\Vehicle;
 
 use App\Enum\VehicleType;
 use App\Model\Network\Network;
+use App\Model\Path\Path;
 
 readonly class VehicleDetails
 {
 
     /**
      * @param VehicleStopDetails[] $stops
-     * @param array<int, array{latitude: float|null, longitude: float|null, distance?: float|null}> $path
      */
     public function __construct(
         public string           $id,
@@ -23,7 +23,7 @@ readonly class VehicleDetails
         public ?Network         $network,
         public ?string          $serviceDate,
         public ?string          $pathRef,
-        public array            $path,
+        public ?Path            $path,
         public ?string          $updatedAt,
         public string           $datetime,
     )
