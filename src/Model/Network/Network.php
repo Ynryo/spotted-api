@@ -39,7 +39,7 @@ readonly class Network
             timezone: (string)($data['timezone'] ?? 'Europe/Paris'),
             logoHref: $data['logoHref'] ?? null,
             darkModeLogoHref: $data['darkModeLogoHref'] ?? null,
-            color: $data['color'] ?? '#000000',
+            color: "#" . ($data['color'] ?? '000000'),
             textColor: $data['textColor'] ?? '#FFFFFF',
             hasVehiclesFeature: (bool)($data['hasVehiclesFeature'] ?? false),
             regionId: isset($data['regionId']) ? (int)$data['regionId'] : null,
