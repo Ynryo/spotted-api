@@ -56,11 +56,13 @@ readonly class VehicleStopDetails
             ? VehicleStopPlatform::fromArray($stop) //bt
             : $guessedPlatform; //ct
 
+        $stopOrder = self::getStopOrder($stop, $vehicleType);
+
         return new self(
             stopName: $stop['stopName'] ?? null,
-            stopOrder: isset($stop['stopOrder']) ? (int)$stop['stopOrder'] : null,
+            stopOrder: $stopOrder,
             stopUIC: $stopUIC,
-            stopType:  self::getStopType($stop, $vehicleType, $stopCount),
+            stopType:  self::getStopType($stop, $stopCount, $stopOrder),
             arrivalAimedTime: $aimedArrival,
             arrivalExpectedTime: $expectedArrival,
             arrivalTimeDifference: self::calculateTimeDifference($expectedArrival, $aimedArrival),
@@ -108,16 +110,27 @@ readonly class VehicleStopDetails
 
     /**
      * @param array<string, mixed> $stop
-     * @return StopType|null
+     * @param int $stopCount
+     * @param int $stopOrder
+     * @return StopType
      */
-    private static function getStopType(array $stop, VehicleType $vehicleType, int $stopCount): ?StopType
+    private static function getStopType(array $stop, int $stopCount, int $stopOrder): StopType
+    {
+        if ($stopOrder == 1) return StopType::START;
+        else if ($stopOrder ==  $stopCount) return StopType::END;
+        else return StopType::INTERMEDIATE;
+    }
+
+    /**
+     * @param array<string, mixed> $stop
+     * @param VehicleType $vehicleType
+     * @return int|null
+     */
+    private static function getStopOrder(array $stop, VehicleType $vehicleType): ?int
     {
         if (!isset($stop['stopOrder'])) return null;
         $stopOrder = $stop['stopOrder'];
         if ($vehicleType == VehicleType::TRAIN) $stopOrder = $stopOrder + 1;
-
-        if ($stopOrder == 1) return StopType::START;
-        else if ($stopOrder ==  $stopCount) return StopType::END;
-        else return StopType::INTERMEDIATE;
+        return $stopOrder;
     }
 }
