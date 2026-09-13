@@ -35,7 +35,13 @@ readonly class VehicleStopDetails
     /**
      * @param array<string, mixed> $stop
      */
-    public static function fromArray(array $stop, ?VehicleStopPlatform $guessedPlatform = null,  VehicleType $vehicleType = VehicleType::BUS, int $stopCount = 0): self
+    public static function fromArray(
+        array $stop,
+        ?VehicleStopPlatform $guessedPlatform = null,
+        VehicleType $vehicleType = VehicleType::BUS,
+        int $index = 0,
+        int $stopsCount = 0
+    ): self
     {
         $stopRef = $stop['stopRef'] ?? null;
         $stopUIC = null;
@@ -62,7 +68,7 @@ readonly class VehicleStopDetails
             stopName: $stop['stopName'] ?? null,
             stopOrder: $stopOrder,
             stopUIC: $stopUIC,
-            stopType:  self::getStopType($stop, $stopCount, $stopOrder),
+            stopType:  self::getStopType($index, $stopsCount),
             arrivalAimedTime: $aimedArrival,
             arrivalExpectedTime: $expectedArrival,
             arrivalTimeDifference: self::calculateTimeDifference($expectedArrival, $aimedArrival),
@@ -109,16 +115,16 @@ readonly class VehicleStopDetails
     }
 
     /**
-     * @param array<string, mixed> $stop
-     * @param int $stopCount
-     * @param int $stopOrder
+     * @param int $index
+     * @param int $stopsCount
      * @return StopType
      */
-    private static function getStopType(array $stop, int $stopCount, int $stopOrder): StopType
+    private static function getStopType(int $index, int $stopsCount): StopType
     {
-        if ($stopOrder == 1) return StopType::START;
-        else if ($stopOrder ==  $stopCount) return StopType::END;
-        else return StopType::INTERMEDIATE;
+        if ($index === 0) return StopType::START;
+        if ($stopsCount > 1 && $index === $stopsCount - 1) return StopType::END;
+
+        return StopType::INTERMEDIATE;
     }
 
     /**
@@ -129,8 +135,8 @@ readonly class VehicleStopDetails
     private static function getStopOrder(array $stop, VehicleType $vehicleType): ?int
     {
         if (!isset($stop['stopOrder'])) return null;
-        $stopOrder = $stop['stopOrder'];
-        if ($vehicleType == VehicleType::TRAIN) $stopOrder = $stopOrder + 1;
+        $stopOrder = (int) $stop['stopOrder'];
+        if ($vehicleType === VehicleType::TRAIN) $stopOrder++;
         return $stopOrder;
     }
 }

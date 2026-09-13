@@ -48,13 +48,13 @@ readonly class JourneyDetailsService
         $stops = [];
         $stopsCount = count($rawJourney['calls'] ?? []);
 
-        foreach ($rawJourney['calls'] ?? [] as $call) {
+        foreach ($rawJourney['calls'] ?? [] as $index => $call) {
             $guessedPlatform = null;
             if ($vehicleType == VehicleType::TRAIN && $vehicleNumber) {
                 $stopUIC = self::getStopUIC($call);
                 if ($stopUIC) $guessedPlatform = $this->platformService->guessPlatform($stopUIC, $vehicleNumber);
             }
-            $stops[] = VehicleStopDetails::fromArray($call, $guessedPlatform, $vehicleType,  $stopsCount);
+            $stops[] = VehicleStopDetails::fromArray($call, $guessedPlatform, $vehicleType, $index, $stopsCount);
         }
 
         return VehicleDetails::fromArray(
