@@ -2,8 +2,8 @@
 
 namespace App\Enum;
 
-enum VehicleType: int
+enum VehicleType: string
 {
-    case TRAIN = 1;
-    case BUS = 2;
+    case TRAIN = "train";
+    case BUS = "bus";
 }

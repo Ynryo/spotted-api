@@ -21,7 +21,9 @@ readonly class Network
         public bool    $hasVehiclesFeature,
         public ?int    $regionId,
         public ?array  $embedMapCenter = null,
-    ) {}
+    )
+    {
+    }
 
     /**
      * @param array<string, mixed> $data
@@ -29,18 +31,18 @@ readonly class Network
     public static function fromArray(array $data): self
     {
         return new self(
-            id: (int) ($data['id'] ?? 0),
-            ref: (string) ($data['ref'] ?? ''),
-            name: (string) ($data['name'] ?? ''),
+            id: (int)($data['id'] ?? 0),
+            ref: (string)($data['ref'] ?? ''),
+            name: (string)($data['name'] ?? ''),
             authority: $data['authority'] ?? null,
-            countryCode: (string) ($data['countryCode'] ?? 'FR'),
-            timezone: (string) ($data['timezone'] ?? 'Europe/Paris'),
+            countryCode: (string)($data['countryCode'] ?? 'FR'),
+            timezone: (string)($data['timezone'] ?? 'Europe/Paris'),
             logoHref: $data['logoHref'] ?? null,
             darkModeLogoHref: $data['darkModeLogoHref'] ?? null,
             color: $data['color'] ?? '#000000',
-            textColor: $data['textColor'] ?? '#ffffff',
-            hasVehiclesFeature: (bool) ($data['hasVehiclesFeature'] ?? false),
-            regionId: isset($data['regionId']) ? (int) $data['regionId'] : null,
+            textColor: $data['textColor'] ?? '#FFFFFF',
+            hasVehiclesFeature: (bool)($data['hasVehiclesFeature'] ?? false),
+            regionId: isset($data['regionId']) ? (int)$data['regionId'] : null,
             embedMapCenter: $data['embedMapCenter'] ?? null,
         );
     }

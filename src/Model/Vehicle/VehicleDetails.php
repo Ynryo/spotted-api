@@ -49,10 +49,6 @@ readonly class VehicleDetails
             ? VehiclePosition::fromArray($journey['position'])
             : null;
 
-        $vehicleType ??= (isset($journey['id']) && str_starts_with($journey['id'], 'SNCF'))
-            ? VehicleType::TRAIN
-            : VehicleType::BUS;
-
         return new self(
             id: (string)($journey['id'] ?? ''),
             lineId: isset($journey['lineId']) ? (int)$journey['lineId'] : null,
