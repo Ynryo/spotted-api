@@ -3,7 +3,6 @@
 namespace App\Model\Vehicle;
 
 use App\Enum\StopType;
-use App\Enum\VehicleType;
 
 readonly class VehicleStopDetails
 {
@@ -38,7 +37,6 @@ readonly class VehicleStopDetails
     public static function fromArray(
         array $stop,
         ?VehicleStopPlatform $guessedPlatform = null,
-        VehicleType $vehicleType = VehicleType::BUS,
         int $index = 0,
         int $stopsCount = 0
     ): self
@@ -62,11 +60,9 @@ readonly class VehicleStopDetails
             ? VehicleStopPlatform::fromArray($stop) //bt
             : $guessedPlatform; //ct
 
-        $stopOrder = self::getStopOrder($stop, $vehicleType);
-
         return new self(
             stopName: $stop['stopName'] ?? null,
-            stopOrder: $stopOrder,
+            stopOrder: isset($stop['stopOrder']) ? (int) $stop['stopOrder'] : null,
             stopUIC: $stopUIC,
             stopType:  self::getStopType($index, $stopsCount),
             arrivalAimedTime: $aimedArrival,
@@ -125,18 +121,5 @@ readonly class VehicleStopDetails
         if ($stopsCount > 1 && $index === $stopsCount - 1) return StopType::END;
 
         return StopType::INTERMEDIATE;
-    }
-
-    /**
-     * @param array<string, mixed> $stop
-     * @param VehicleType $vehicleType
-     * @return int|null
-     */
-    private static function getStopOrder(array $stop, VehicleType $vehicleType): ?int
-    {
-        if (!isset($stop['stopOrder'])) return null;
-        $stopOrder = (int) $stop['stopOrder'];
-        if ($vehicleType === VehicleType::TRAIN) $stopOrder++;
-        return $stopOrder;
     }
 }
