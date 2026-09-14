@@ -62,7 +62,7 @@ readonly class VehicleStopDetails
 
         return new self(
             stopName: $stop['stopName'] ?? null,
-            stopOrder: isset($stop['stopOrder']) ? (int) $stop['stopOrder'] : null,
+            stopOrder: $index + 1,
             stopUIC: $stopUIC,
             stopType:  self::getStopType($index, $stopsCount),
             arrivalAimedTime: $aimedArrival,
