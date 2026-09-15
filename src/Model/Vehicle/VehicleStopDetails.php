@@ -139,6 +139,14 @@ readonly class VehicleStopDetails
             return StopType::START;
         }
 
+        if ($index === $stopsCount - 1) {
+            return StopType::END;
+        }
+
+        if (($distanceTraveled !== null && $distanceTraveled === 0.0) || $stopOrder === 1) {
+            return StopType::START;
+        }
+
         if ($stopsCount > 1 && $index === $stopsCount - 1) {
             return StopType::END;
         }
