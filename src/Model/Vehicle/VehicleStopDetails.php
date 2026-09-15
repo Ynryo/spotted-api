@@ -126,13 +126,8 @@ readonly class VehicleStopDetails
      */
     private static function getStopType(int $stopOrder, int $stopsCount): StopType
     {
-        if ($stopOrder === 1) {
-            return StopType::START;
-        }
-
-        if ($stopsCount > 1 && $stopOrder === $stopsCount) {
-            return StopType::END;
-        }
+        if ($stopOrder === 1) return StopType::START;
+        if ($stopOrder === $stopsCount) return StopType::END;
 
         return StopType::INTERMEDIATE;
     }
