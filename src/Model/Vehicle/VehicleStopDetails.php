@@ -69,11 +69,13 @@ readonly class VehicleStopDetails
             $stopOrder = $index + 1;
         }
 
+        $distanceTraveled = isset($stop['distanceTraveled']) ? (float)$stop['distanceTraveled'] : null;
+
         return new self(
             stopName: $stop['stopName'] ?? null,
             stopOrder: $stopOrder,
             stopUIC: $stopUIC,
-            stopType: self::getStopType($index, $stopsCount, $stopOrder),
+            stopType: self::getStopType($index, $stopsCount, $stopOrder, $distanceTraveled),
             arrivalAimedTime: $aimedArrival,
             arrivalExpectedTime: $expectedArrival,
             arrivalTimeDifference: self::calculateTimeDifference($expectedArrival, $aimedArrival),
@@ -82,7 +84,7 @@ readonly class VehicleStopDetails
             departureExpectedTime: $expectedDeparture,
             departureTimeDifference: self::calculateTimeDifference($expectedDeparture, $aimedDeparture),
             callStatus: $stop['callStatus'] ?? 'SCHEDULED',
-            distanceTraveled: isset($stop['distanceTraveled']) ? (float)$stop['distanceTraveled'] : null,
+            distanceTraveled: $distanceTraveled,
             latitude: isset($stop['latitude']) ? (float)$stop['latitude'] : null,
             longitude: isset($stop['longitude']) ? (float)$stop['longitude'] : null,
             platform: $platform,
@@ -122,17 +124,23 @@ readonly class VehicleStopDetails
     /**
      * @param int $index
      * @param int $stopsCount
-     * @param int|null $stopOrder
+     * @param int $stopOrder
+     * @param float|null $distanceTraveled
      * @return StopType
      */
-    private static function getStopType(int $index, int $stopsCount, ?int $stopOrder = null): StopType
+    private static function getStopType(
+        int $index,
+        int $stopsCount,
+        int $stopOrder,
+        ?float $distanceTraveled = null
+    ): StopType
     {
-        if ($stopsCount > 1 && $index === $stopsCount - 1) {
-            return StopType::END;
+        if (($distanceTraveled !== null && $distanceTraveled === 0.0) || $stopOrder === 1) {
+            return StopType::START;
         }
 
-        if ($index === 0 || $stopOrder === 1) {
-            return StopType::START;
+        if ($stopsCount > 1 && $index === $stopsCount - 1) {
+            return StopType::END;
         }
 
         return StopType::INTERMEDIATE;
