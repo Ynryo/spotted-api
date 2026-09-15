@@ -3,6 +3,7 @@
 namespace App\Model\Vehicle;
 
 use App\Enum\StopType;
+use App\Enum\VehicleType;
 
 readonly class VehicleStopDetails
 {
@@ -38,7 +39,8 @@ readonly class VehicleStopDetails
         array $stop,
         ?VehicleStopPlatform $guessedPlatform = null,
         int $index = 0,
-        int $stopsCount = 0
+        int $stopsCount = 0,
+        ?VehicleType $vehicleType = null
     ): self
     {
         $stopRef = $stop['stopRef'] ?? null;
@@ -60,11 +62,18 @@ readonly class VehicleStopDetails
             ? VehicleStopPlatform::fromArray($stop) //bt
             : $guessedPlatform; //ct
 
+        $rawOrder = $stop['order'] ?? $stop['stopOrder'] ?? $stop['stopPointOrder'] ?? null;
+        if ($rawOrder !== null) {
+            $stopOrder = ($vehicleType === VehicleType::TRAIN) ? ((int)$rawOrder + 1) : (int)$rawOrder;
+        } else {
+            $stopOrder = $index + 1;
+        }
+
         return new self(
             stopName: $stop['stopName'] ?? null,
-            stopOrder: $index + 1,
+            stopOrder: $stopOrder,
             stopUIC: $stopUIC,
-            stopType:  self::getStopType($index, $stopsCount),
+            stopType: self::getStopType($stopOrder, $index, $stopsCount, $aimedArrival, $aimedDeparture),
             arrivalAimedTime: $aimedArrival,
             arrivalExpectedTime: $expectedArrival,
             arrivalTimeDifference: self::calculateTimeDifference($expectedArrival, $aimedArrival),
@@ -111,14 +120,27 @@ readonly class VehicleStopDetails
     }
 
     /**
+     * @param int $stopOrder
      * @param int $index
      * @param int $stopsCount
+     * @param string|null $aimedArrival
+     * @param string|null $aimedDeparture
      * @return StopType
      */
-    private static function getStopType(int $index, int $stopsCount): StopType
+    private static function getStopType(
+        int $stopOrder,
+        int $index,
+        int $stopsCount,
+        ?string $aimedArrival = null,
+        ?string $aimedDeparture = null
+    ): StopType
     {
-        if ($index === 0) return StopType::START;
-        if ($stopsCount > 1 && $index === $stopsCount - 1) return StopType::END;
+        if ($stopOrder === 1 || ($aimedArrival === null && $aimedDeparture !== null)) {
+            return StopType::START;
+        }
+        if ($stopsCount > 1 && ($index === $stopsCount - 1 || ($aimedArrival !== null && $aimedDeparture === null))) {
+            return StopType::END;
+        }
 
         return StopType::INTERMEDIATE;
     }

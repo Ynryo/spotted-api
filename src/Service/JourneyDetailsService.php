@@ -54,7 +54,7 @@ readonly class JourneyDetailsService
                 $stopUIC = self::getStopUIC($call);
                 if ($stopUIC) $guessedPlatform = $this->platformService->guessPlatform($stopUIC, $vehicleNumber);
             }
-            $stops[] = VehicleStopDetails::fromArray($call, $guessedPlatform, $index, $stopsCount);
+            $stops[] = VehicleStopDetails::fromArray($call, $guessedPlatform, $index, $stopsCount, $vehicleType);
         }
 
         return VehicleDetails::fromArray(
