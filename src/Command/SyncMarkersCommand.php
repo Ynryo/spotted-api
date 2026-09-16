@@ -27,7 +27,7 @@ class SyncMarkersCommand extends Command
 
     protected function configure(): void
     {
-        $this->addOption('watch', 'w', InputOption::VALUE_NONE, 'Tourne en boucle toutes les 15 secondes');
+        $this->addOption('watch', 'w', InputOption::VALUE_NONE, 'Tourne en boucle toutes les 13 secondes');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -51,7 +51,7 @@ class SyncMarkersCommand extends Command
             }
 
             if ($watch) {
-                sleep(15); // Attend 15 secondes avant le prochain cycle
+                sleep(13); // Attend 13 secondes avant le prochain cycle
             }
         } while ($watch);
 
