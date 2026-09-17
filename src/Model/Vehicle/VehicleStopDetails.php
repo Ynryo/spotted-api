@@ -36,11 +36,11 @@ readonly class VehicleStopDetails
      * @param array<string, mixed> $stop
      */
     public static function fromArray(
-        array $stop,
+        array                $stop,
         ?VehicleStopPlatform $guessedPlatform = null,
-        int $index = 0,
-        int $stopsCount = 0,
-        ?VehicleType $vehicleType = null
+        int                  $index = 0,
+        int                  $stopsCount = 0,
+        ?VehicleType         $vehicleType = null
     ): self
     {
         $stopRef = $stop['stopRef'] ?? null;
@@ -129,13 +129,13 @@ readonly class VehicleStopDetails
      * @return StopType
      */
     private static function getStopType(
-        int $index,
-        int $stopsCount,
-        int $stopOrder,
+        int    $index,
+        int    $stopsCount,
+        int    $stopOrder,
         ?float $distanceTraveled = null
     ): StopType
     {
-        if (($distanceTraveled !== null && $distanceTraveled === 0.0) || $stopOrder === 1) {
+        if ($distanceTraveled === 0.0 || $stopOrder === 1) {
             return StopType::START;
         }
 
