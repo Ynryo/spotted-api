@@ -75,7 +75,7 @@ readonly class VehicleStopDetails
             stopName: $stop['stopName'] ?? null,
             stopOrder: $stopOrder,
             stopUIC: $stopUIC,
-            stopType: self::getStopType($index, $stopsCount, $stopOrder, $distanceTraveled),
+            stopType: self::getStopType($index, $stopsCount, $distanceTraveled),
             arrivalAimedTime: $aimedArrival,
             arrivalExpectedTime: $expectedArrival,
             arrivalTimeDifference: self::calculateTimeDifference($expectedArrival, $aimedArrival),
@@ -124,25 +124,17 @@ readonly class VehicleStopDetails
     /**
      * @param int $index
      * @param int $stopsCount
-     * @param int $stopOrder
      * @param float|null $distanceTraveled
      * @return StopType
      */
     private static function getStopType(
-        int    $index,
-        int    $stopsCount,
-        int    $stopOrder,
+        int $index,
+        int $stopsCount,
         ?float $distanceTraveled = null
     ): StopType
     {
-        if ($distanceTraveled === 0.0 || $stopOrder === 1) {
-            return StopType::START;
-        }
-
-        if ($index === $stopsCount - 1) {
-            return StopType::END;
-        }
-
+        if ($distanceTraveled === 0.0) return StopType::START;
+        if ($index === $stopsCount - 1) return StopType::END;
         return StopType::INTERMEDIATE;
     }
 }
