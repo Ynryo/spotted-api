@@ -18,7 +18,7 @@ readonly class Path
      */
     public static function fromArray(string $id, array $data): self
     {
-        $rawPoints = $data['path'] ?? [];
+        $rawPoints = $data['p'] ?? [];
         $points = [];
 
         foreach ($rawPoints as $point) {
