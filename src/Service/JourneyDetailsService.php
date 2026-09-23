@@ -30,10 +30,10 @@ readonly class JourneyDetailsService
         }
         if (!$rawJourney) return null;
 
-        // Path
+        // Path (récupéré depuis vehicle-journeys/{id}/paths avec déviations éventuelles)
         $path = null;
-        $pathRef = $rawJourney['pathRef'] ?? null;
-        if ($pathRef) $path = $this->pathService->getPath($pathRef);
+        $journeyId = $rawJourney['id'] ?? $vehicleJourney;
+        if ($journeyId) $path = $this->pathService->getPath($journeyId);
 
         // Network
         $network = null;
