@@ -5,24 +5,36 @@ namespace App\Model\Path;
 readonly class Path
 {
     /**
-     * @param array<int, array{latitude: float|null, longitude: float|null, distance: float|null}> $points
+     * @param array<int, array<int, array{latitude: float|null, longitude: float|null, distance: float|null}>> $segments
      * @param array<int, array<int, array{latitude: float|null, longitude: float|null}>> $deviatedSegments
      */
     public function __construct(
-        public string $id,
-        public array  $points,
-        public int    $count,
-        public array  $deviatedSegments = []
+        public array $segments,
+        public array $deviatedSegments = []
     )
     {
     }
 
     /**
      * @param array<string, mixed> $data
+     * @return self
      */
-    public static function fromArray(string $id, array $data): self
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            segments: self::getSegments($data),
+            deviatedSegments: self::getDeviatedSegments($data)
+        );
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     * @return array<int, array<int, array{latitude: float|null, longitude: float|null, distance: float|null}>>
+     */
+    public static function getSegments(array $data): array
     {
         $rawPoints = $data['path']['p'] ?? [];
+        $segments = [];
         $points = [];
 
         foreach ($rawPoints as $point) {
@@ -32,13 +44,8 @@ readonly class Path
                 'distance' => isset($point[2]) ? (float)$point[2] : null,
             ];
         }
-
-        return new self(
-            id: $id,
-            points: $points,
-            count: count($points),
-            deviatedSegments: self::getDeviatedSegments($data)
-        );
+        $segments[] = $points;
+        return $segments;
     }
 
     /**

@@ -33,6 +33,6 @@ readonly class PathService
             $this->redis->set($cacheKey, json_encode($pathData), ['ex' => CacheTtl::SHORT->value]);
         }
 
-        return Path::fromArray($vehicleJourneyId, $pathData);
+        return Path::fromArray($pathData);
     }
 }
