@@ -9,7 +9,10 @@ enum TrackingType: string
     case GPS = "GPS";
     case UNKNOWN = "UNKNOWN";
 
-    public static function fromJourney(array $journey): ?self
+    /**
+     * @param array<string, mixed> $journey
+     */
+    public static function fromJourney(array $journey): self
     {
         $type = $journey['position']['type'] ?? null;
 
@@ -22,6 +25,7 @@ enum TrackingType: string
                 ? self::ESTIMATED
                 : self::THEORETICAL;
         }
+
         return self::UNKNOWN;
     }
 }

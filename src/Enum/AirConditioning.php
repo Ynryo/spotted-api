@@ -8,7 +8,7 @@ enum AirConditioning: string
     case ABSENT = "ABSENT";
     case UNKNOWN = "UNKNOWN";
 
-    public static function fromString(?string $value): ?self
+    public static function fromString(?string $value): self
     {
         return self::tryFrom((string) $value) ?? self::UNKNOWN;
     }

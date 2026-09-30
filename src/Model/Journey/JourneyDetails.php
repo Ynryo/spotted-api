@@ -21,14 +21,14 @@ readonly class JourneyDetails
         public ?string          $destination,
         public ?string          $serviceDate,
         public Occupancy        $occupancy,
-        public bool             $wheelchairAccessible = false,
-        public bool             $bikeAccessible = false,
         public array            $stops,
         public ?JourneyPosition $position,
         public ?Network         $network,
         public ?Path            $path,
         public ?VehicleDetails  $vehicle,
         public ?string          $updatedAt,
+        public bool             $wheelchairAccessible = false,
+        public bool             $bikeAccessible = false,
     )
     {
     }
@@ -46,10 +46,10 @@ readonly class JourneyDetails
      * @param JourneyStopDetails[] $stops
      */
     public static function fromArray(
-        array        $journey,
-        ?Path        $path = null,
-        ?Network     $network = null,
-        array        $stops = [],
+        array    $journey,
+        ?Path    $path = null,
+        ?Network $network = null,
+        array    $stops = [],
     ): self
     {
         $position = !empty($journey['position']) && is_array($journey['position'])
@@ -63,14 +63,14 @@ readonly class JourneyDetails
             destination: $journey['destination'] ?? null,
             serviceDate: $journey['serviceDate'] ?? null,
             occupancy: Occupancy::fromString($journey['occupancy'] ?? null),
-            wheelchairAccessible: $journey['wheelchairAccessible'] ?? false,
-            bikeAccessible: $journey['bikesAllowed'] ?? $journey['bikeAllowed'] ?? false,
             stops: $stops,
             position: $position,
             network: $network,
             path: $path,
             vehicle: !empty($journey['vehicle']) ? VehicleDetails::fromArray($journey['vehicle']) : null,
             updatedAt: $journey['updatedAt'] ?? null,
+            wheelchairAccessible: $journey['wheelchairAccessible'] ?? false,
+            bikeAccessible: $journey['bikesAllowed'] ?? $journey['bikeAllowed'] ?? false,
         );
     }
 }

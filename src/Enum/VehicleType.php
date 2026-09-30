@@ -9,7 +9,7 @@ enum VehicleType: string
     case COACH = "COACH";
     case UNKNOWN = "UNKNOWN";
 
-    public static function fromString(?string $value): ?self
+    public static function fromString(?string $value): self
     {
         return self::tryFrom((string) $value) ?? self::UNKNOWN;
     }
