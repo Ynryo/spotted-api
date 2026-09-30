@@ -61,8 +61,7 @@ readonly class JourneyDetailsService
             $rawJourney,
             $path,
             $network,
-            $stops,
-            $vehicleType
+            $stops
         );
     }
 

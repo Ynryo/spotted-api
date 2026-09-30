@@ -50,7 +50,6 @@ readonly class JourneyDetails
         ?Path        $path = null,
         ?Network     $network = null,
         array        $stops = [],
-        ?VehicleType $vehicleType = null,
     ): self
     {
         $position = !empty($journey['position']) && is_array($journey['position'])
