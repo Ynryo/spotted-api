@@ -135,13 +135,12 @@ class BusTrackerClient
     }
 
     /**
-     * @param int $networkId
-     * @return array<string, mixed>|null
+     * @return array<int, array<string, mixed>>|null
      */
-    public function getNetwork(int $networkId): ?array
+    public function getNetworkLines(int $networkId): ?array
     {
         try {
-            $response = $this->httpClient->request('GET', "https://bus-tracker.fr/api/networks/{$networkId}", [
+            $response = $this->httpClient->request('GET', self::BASE_URL . "networks/{$networkId}?withDetails=true", [
                 'headers' => [
                     'Accept' => 'application/json',
                 ],
@@ -157,12 +156,12 @@ class BusTrackerClient
     }
 
     /**
-     * @return array<int, array<string, mixed>>|null
+     * @return array<string, mixed>|null
      */
-    public function getNetworkLines(int $networkId): ?array
+    public function getVehicles(): ?array
     {
         try {
-            $response = $this->httpClient->request('GET', self::BASE_URL . "networks/{$networkId}?withDetails=true", [
+            $response = $this->httpClient->request('GET', self::BASE_URL . "vehicles", [
                 'headers' => [
                     'Accept' => 'application/json',
                 ],
