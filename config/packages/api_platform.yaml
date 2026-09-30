@@ -1,8 +1,0 @@
-api_platform:
-    title: Spotted API
-    description: API de suivi en temps réel des transports (Bus, Tram, Trains)
-    version: 1.0.0
-    defaults:
-        stateless: true
-        cache_headers:
-            vary: ['Content-Type', 'Authorization', 'Origin']
