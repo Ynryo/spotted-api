@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Model\Vehicle;
+namespace App\Model\Journey;
 
 use App\Enum\StopType;
 use App\Enum\VehicleType;
 
-readonly class VehicleStopDetails
+readonly class JourneyStopDetails
 {
     /**
      * @param string[] $flags
@@ -26,7 +26,7 @@ readonly class VehicleStopDetails
         public ?float               $distanceTraveled,
         public ?float               $latitude,
         public ?float               $longitude,
-        public ?VehicleStopPlatform $platform,
+        public ?JourneyStopPlatform $platform,
         public array                $flags = [],
     )
     {
@@ -37,7 +37,7 @@ readonly class VehicleStopDetails
      */
     public static function fromArray(
         array                $stop,
-        ?VehicleStopPlatform $guessedPlatform = null,
+        ?JourneyStopPlatform $guessedPlatform = null,
         int                  $index = 0,
         int                  $stopsCount = 0,
         ?VehicleType         $vehicleType = null
@@ -59,7 +59,7 @@ readonly class VehicleStopDetails
         $expectedDeparture = $stop['expectedTime'] ?? null;
 
         $platform = (!empty($stop['platformName']))
-            ? VehicleStopPlatform::fromArray($stop) //bt
+            ? JourneyStopPlatform::fromArray($stop) //bt
             : $guessedPlatform; //ct
 
         $rawOrder = $stop['order'] ?? $stop['stopOrder'] ?? $stop['stopPointOrder'] ?? null;

@@ -4,8 +4,8 @@ namespace App\Service;
 
 use App\Enum\CacheTtl;
 use App\Enum\VehicleType;
-use App\Model\Vehicle\VehicleDetails;
-use App\Model\Vehicle\VehicleStopDetails;
+use App\Model\Journey\JourneyDetails;
+use App\Model\Journey\JourneyStopDetails;
 use Redis;
 
 readonly class JourneyDetailsService
@@ -20,7 +20,7 @@ readonly class JourneyDetailsService
     {
     }
 
-    public function getJourneyDetails(string $vehicleJourney): ?VehicleDetails
+    public function getJourneyDetails(string $vehicleJourney): ?JourneyDetails
     {
         $cachedJourney = $this->redis->get($vehicleJourney);
         if ($cachedJourney) $rawJourney = json_decode($cachedJourney, true);
@@ -54,10 +54,10 @@ readonly class JourneyDetailsService
                 $stopUIC = self::getStopUIC($call);
                 if ($stopUIC) $guessedPlatform = $this->platformService->guessPlatform($stopUIC, $vehicleNumber);
             }
-            $stops[] = VehicleStopDetails::fromArray($call, $guessedPlatform, $index, $stopsCount, $vehicleType);
+            $stops[] = JourneyStopDetails::fromArray($call, $guessedPlatform, $index, $stopsCount, $vehicleType);
         }
 
-        return VehicleDetails::fromArray(
+        return JourneyDetails::fromArray(
             $rawJourney,
             $path,
             $network,

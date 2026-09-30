@@ -3,7 +3,7 @@
 namespace App\Service;
 
 use App\Enum\CacheTtl;
-use App\Model\Vehicle\VehicleStopPlatform;
+use App\Model\Journey\JourneyStopPlatform;
 use Redis;
 
 readonly class PlatformService
@@ -18,9 +18,9 @@ readonly class PlatformService
     /**
      * @param string $stopUIC
      * @param string $trainNum
-     * @return VehicleStopPlatform|null
+     * @return JourneyStopPlatform|null
      */
-    public function guessPlatform(string $stopUIC, string $trainNum): ?VehicleStopPlatform
+    public function guessPlatform(string $stopUIC, string $trainNum): ?JourneyStopPlatform
     {
         $platform = $this->redis->get("platform:$stopUIC:$trainNum");
         if (!$platform) {
@@ -34,10 +34,10 @@ readonly class PlatformService
             if (!$platformData) return null;
 
             $this->redis->set("platform:$stopUIC:$trainNum", json_encode($platformData), ['ex' => CacheTtl::REALTIME->value]);
-            return VehicleStopPlatform::fromArray($platformData);
+            return JourneyStopPlatform::fromArray($platformData);
         }
 
         $decoded = json_decode($platform, true);
-        return is_array($decoded) ? VehicleStopPlatform::fromArray($decoded) : null;
+        return is_array($decoded) ? JourneyStopPlatform::fromArray($decoded) : null;
     }
 }

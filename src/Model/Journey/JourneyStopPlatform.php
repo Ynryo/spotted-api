@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Model\Vehicle;
+namespace App\Model\Journey;
 
-readonly class VehicleStopPlatform
+readonly class JourneyStopPlatform
 {
     public function __construct(
         public string  $name,

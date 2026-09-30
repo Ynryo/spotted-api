@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Model\Vehicle;
+namespace App\Model\Journey;
 
 use App\Enum\VehicleType;
 use App\Model\Network\Network;
 use App\Model\Path\Path;
 
-readonly class VehicleDetails
+readonly class JourneyDetails
 {
 
     /**
-     * @param VehicleStopDetails[] $stops
+     * @param JourneyStopDetails[] $stops
      */
     public function __construct(
         public string           $id,
@@ -20,7 +20,7 @@ readonly class VehicleDetails
         public ?string          $destination,
         public ?string          $serviceDate,
         public array            $stops,
-        public ?VehiclePosition $position,
+        public ?JourneyPosition $position,
         public ?Network         $network,
         public ?Path            $path,
         public ?string          $updatedAt,
@@ -30,7 +30,7 @@ readonly class VehicleDetails
 
     /**
      * @param array<string, mixed> $journey
-     * @param VehicleStopDetails[] $stops
+     * @param JourneyStopDetails[] $stops
      */
     public static function fromArray(
         array       $journey,
@@ -41,7 +41,7 @@ readonly class VehicleDetails
     ): self
     {
         $position = !empty($journey['position']) && is_array($journey['position'])
-            ? VehiclePosition::fromArray($journey['position'])
+            ? JourneyPosition::fromArray($journey['position'])
             : null;
 
         return new self(

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Model\Vehicle;
+namespace App\Model\Journey;
 
-readonly class VehiclePosition
+readonly class JourneyPosition
 {
     public function __construct(
         public float   $latitude,
