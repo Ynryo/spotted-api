@@ -13,7 +13,7 @@ class VehicleController extends AbstractController
 {
 
     #[Route('/vehicles', name: 'app_vehicles', methods: ['GET'])]
-    #[OA\Tag(name: 'Regions')]
+    #[OA\Tag(name: 'Vehicles')]
     #[OA\Get(summary: 'Liste des véhicules.')]
     #[OA\Response(response: 200, description: 'Liste des véhicules.')]
     public function getVehicles(VehicleService $vehicleService): JsonResponse
