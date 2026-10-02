@@ -2,7 +2,7 @@
 
 namespace App\Enum;
 
-enum TrackingType: string
+enum JourneyTrackingType: string
 {
     case THEORETICAL = "THEORETICAL";
     case ESTIMATED = "ESTIMATED";

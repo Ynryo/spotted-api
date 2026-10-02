@@ -2,7 +2,7 @@
 
 namespace App\Tests\Enum;
 
-use App\Enum\TrackingType;
+use App\Enum\JourneyTrackingType;
 use PHPUnit\Framework\TestCase;
 
 class TrackingTypeTest extends TestCase
@@ -14,7 +14,7 @@ class TrackingTypeTest extends TestCase
             'calls' => [],
         ];
 
-        $this->assertSame(TrackingType::GPS, TrackingType::fromJourney($journey));
+        $this->assertSame(JourneyTrackingType::GPS, JourneyTrackingType::fromJourney($journey));
     }
 
     public function testReturnsEstimatedWhenFirstCallHasExpectedTime(): void
@@ -29,7 +29,7 @@ class TrackingTypeTest extends TestCase
             ],
         ];
 
-        $this->assertSame(TrackingType::ESTIMATED, TrackingType::fromJourney($journey));
+        $this->assertSame(JourneyTrackingType::ESTIMATED, JourneyTrackingType::fromJourney($journey));
     }
 
     public function testReturnsTheoreticalWhenCallsHaveOnlyAimedTime(): void
@@ -43,7 +43,7 @@ class TrackingTypeTest extends TestCase
             ],
         ];
 
-        $this->assertSame(TrackingType::THEORETICAL, TrackingType::fromJourney($journey));
+        $this->assertSame(JourneyTrackingType::THEORETICAL, JourneyTrackingType::fromJourney($journey));
     }
 
     public function testReturnsUnknownWhenPositionTypeIsMissing(): void
@@ -52,6 +52,6 @@ class TrackingTypeTest extends TestCase
             'calls' => [],
         ];
 
-        $this->assertSame(TrackingType::UNKNOWN, TrackingType::fromJourney($journey));
+        $this->assertSame(JourneyTrackingType::UNKNOWN, JourneyTrackingType::fromJourney($journey));
     }
 }
