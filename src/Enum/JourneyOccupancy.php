@@ -2,7 +2,7 @@
 
 namespace App\Enum;
 
-enum Occupancy: string
+enum JourneyOccupancy: string
 {
     case LOW = "LOW";
     case MEDIUM = "MEDIUM";

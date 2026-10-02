@@ -2,7 +2,7 @@
 
 namespace App\Enum;
 
-enum AirConditioning: string
+enum VehicleAirConditioning: string
 {
     case PRESENT = "PRESENT";
     case ABSENT = "ABSENT";
