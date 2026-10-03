@@ -42,17 +42,37 @@ readonly class JourneyDetailsService
 
         //vehicle type et number
         $vehicleType = self::getVehicleType($rawJourney['id'] ?? '');
-        $vehicleNumber = (string) ($rawJourney['vehicle']['number'] ?? null);
+        $vehicleNumber = (string) ($rawJourney['vehicle']['number'] ?? '');
 
         // Transformation POO des arrêts (calls)
         $stops = [];
-        $stopsCount = count($rawJourney['calls'] ?? []);
+        $calls = $rawJourney['calls'] ?? [];
+        $stopsCount = count($calls);
 
-        foreach ($rawJourney['calls'] ?? [] as $index => $call) {
+        // Batch resolve platforms to fix N+1 performance anti-pattern
+        $guessedPlatforms = [];
+        if ($vehicleType === VehicleType::TRAIN && $vehicleNumber !== '') {
+            $uics = [];
+            foreach ($calls as $call) {
+                if (is_array($call)) {
+                    $uic = self::getStopUIC($call);
+                    if ($uic !== null) {
+                        $uics[] = $uic;
+                    }
+                }
+            }
+            if (!empty($uics)) {
+                $guessedPlatforms = $this->platformService->guessPlatforms($uics, $vehicleNumber);
+            }
+        }
+
+        foreach ($calls as $index => $call) {
             $guessedPlatform = null;
-            if ($vehicleType == VehicleType::TRAIN && $vehicleNumber) {
+            if ($vehicleType === VehicleType::TRAIN && $vehicleNumber !== '') {
                 $stopUIC = self::getStopUIC($call);
-                if ($stopUIC) $guessedPlatform = $this->platformService->guessPlatform($stopUIC, $vehicleNumber);
+                if ($stopUIC !== null && isset($guessedPlatforms[$stopUIC])) {
+                    $guessedPlatform = $guessedPlatforms[$stopUIC];
+                }
             }
             $stops[] = VehicleStopDetails::fromArray($call, $guessedPlatform, $index, $stopsCount, $vehicleType);
         }
