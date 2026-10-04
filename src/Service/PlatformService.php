@@ -22,22 +22,21 @@ readonly class PlatformService
      */
     public function guessPlatform(string $stopUIC, string $trainNum): ?JourneyStopPlatform
     {
-        $platform = $this->redis->get("platform:$stopUIC:$trainNum");
-        if (!$platform) {
-            $responsesPlatform = $this->client->guessPlatform($stopUIC, $trainNum);
-            $platformData = null;
-            foreach($responsesPlatform as $responsePlatform) {
-                if ($responsePlatform['percentage'] > $platformData['percentage']) {
-                    $platformData = $responsePlatform;
+        $rawBestPlatform = null;
+        $cachedBestPlatform = $this->redis->get("platform:$stopUIC:$trainNum");
+        if ($cachedBestPlatform) $rawBestPlatform = json_decode($cachedBestPlatform, true);
+        else {
+            $rawPlatforms = $this->client->guessPlatform($stopUIC, $trainNum);
+            if (!$rawPlatforms) return null;
+
+            //on prend la meilleure
+            foreach ($rawPlatforms as $rawPlatform) {
+                if (!isset($rawBestPlatform) || ($rawPlatform['percentage'] > $rawBestPlatform['percentage'])) { //init $platformData with the first response
+                    $rawBestPlatform = $rawPlatform;
                 }
             }
-            if (!$platformData) return null;
-
-            $this->redis->set("platform:$stopUIC:$trainNum", json_encode($platformData), ['ex' => CacheTtl::REALTIME->value]);
-            return JourneyStopPlatform::fromArray($platformData);
+            $this->redis->set("platform:$stopUIC:$trainNum", json_encode($rawBestPlatform), ['ex' => CacheTtl::REALTIME->value]);
         }
-
-        $decoded = json_decode($platform, true);
-        return is_array($decoded) ? JourneyStopPlatform::fromArray($decoded) : null;
+        return JourneyStopPlatform::fromArray($rawBestPlatform);
     }
 }
