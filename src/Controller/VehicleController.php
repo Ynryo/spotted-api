@@ -29,7 +29,7 @@ class VehicleController extends AbstractController
     #[Route('/vehicles/{vehicleId}', name: 'app_region', requirements: ['vehicleId' => '\d+'], methods: ['GET'])]
     #[OA\Tag(name: 'Vehicles')]
     #[OA\Get(summary: 'Récupération d\'un véhicule.')]
-    #[OA\Parameter(name: 'regionId', description: 'Identifiant unique du véhicule (ex: 1, 2, 3, ...)', in: 'path', required: true)]
+    #[OA\Parameter(name: 'vehicleId', description: 'Identifiant unique du véhicule (ex: 1, 2, 3, ...)', in: 'path', required: true)]
     #[OA\Response(response: 200, description: 'Récupération d\'un véhicule.')]
     #[OA\Response(response: 404, description: 'Véhicule non trouvée')]
     public function getVehicle(int $vehicleId, VehicleService $vehicleService): JsonResponse
