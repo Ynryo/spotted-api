@@ -24,15 +24,15 @@ readonly class NetworkService
         if ($cachedNetworks) $rawNetworks = json_decode($cachedNetworks, true);
         else {
             $rawNetworks = $this->client->getNetworks();
+            if (!$rawNetworks) return null;
             $this->redis->set('networks', json_encode($rawNetworks), ['ex' => CacheTtl::LONG->value]);
         }
-        if (!$rawNetworks) return null;
 
         $networks = [];
         foreach ($rawNetworks as $rawNetwork) {
-            $networks[] = Network::fromArray($rawNetwork);
+            $network = Network::fromArray($rawNetwork);
+            if ($network !== null) $networks[] = $network;
         }
-
         return $networks;
     }
 
