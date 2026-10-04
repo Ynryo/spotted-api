@@ -16,25 +16,6 @@ readonly class VehicleService
     }
 
     /**
-     * @param int $vehicleId
-     * @return VehicleDetails|null
-     */
-    public function getVehicle(int $vehicleId): ?VehicleDetails
-    {
-        $vehicles = $this->getVehicles();
-
-        if ($vehicles === null) {
-            return null;
-        }
-
-        foreach ($vehicles as $vehicle) {
-            if ($vehicle->id == (string) $vehicleId) return $vehicle;
-        }
-
-        return null;
-    }
-
-    /**
      * @return VehicleDetails[]|null
      */
     public function getVehicles(): ?array
@@ -43,14 +24,32 @@ readonly class VehicleService
         if ($cachedVehicles) $rawVehicles = json_decode($cachedVehicles, true);
         else {
             $rawVehicles = $this->client->getVehicles();
+            if (!$rawVehicles) return null;
             $this->redis->set('vehicles', json_encode($rawVehicles), ['ex' => CacheTtl::SHORT->value]);
         }
-        if (!$rawVehicles) return null;
 
         $vehicles = [];
         foreach ($rawVehicles as $rawVehicle) {
-            $vehicles[] = VehicleDetails::fromArray($rawVehicle);
+            $vehicle = VehicleDetails::fromArray($rawVehicle);
+            if ($vehicle !== null) $vehicles[] = $vehicle;
         }
         return $vehicles;
+    }
+
+    /**
+     * @param int $vehicleId
+     * @return VehicleDetails|null
+     */
+    public function getVehicle(int $vehicleId): ?VehicleDetails
+    {
+        $vehicles = $this->getVehicles();
+
+        if ($vehicles === null) return null;
+
+        foreach ($vehicles as $vehicle) {
+            if ($vehicle->id == (string) $vehicleId) return $vehicle;
+        }
+
+        return null;
     }
 }
