@@ -5,8 +5,8 @@ namespace App\Model\Journey;
 readonly class JourneyStopPlatform
 {
     public function __construct(
-        public string  $name,
-        public ?string $percentage,
+        public string $name,
+        public int    $percentage = 0,
     )
     {
     }
@@ -15,11 +15,15 @@ readonly class JourneyStopPlatform
      * @param array<string, mixed> $data
      * @return self
      */
-    public static function fromArray(array $data): self
+    public static function fromArray(?array $data = null): ?self
     {
+        if (empty($data) || !isset($data['platform'], $data['percentage'])) {
+            return null;
+        }
+
         return new self(
-            name: $data['platformName'] ?? $data['platform'] ?? 'N/A',
-            percentage: $data['percentage'] ?? 100,
+            name: $data['platform'],
+            percentage: $data['percentage'],
         );
     }
 }
