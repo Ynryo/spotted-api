@@ -6,6 +6,7 @@ enum VehicleType: string
 {
     case TRAIN = "TRAIN";
     case BUS = "BUS";
+    case TRAMWAY = "TRAMWAY";
     case COACH = "COACH";
     case UNKNOWN = "UNKNOWN";
 

@@ -2,7 +2,7 @@
 
 namespace App\Tests\Model\Vehicle;
 
-use App\Enum\AirConditioning;
+use App\Enum\VehicleAirConditioning;
 use App\Enum\VehicleType;
 use App\Model\Vehicle\VehicleDetails;
 use App\Tests\AbstractKernelTestCase;
@@ -35,7 +35,7 @@ class VehicleDetailsTest extends AbstractKernelTestCase
         $this->assertSame('405', $vehicle->number);
         $this->assertSame('Iveco Urbanway 12 GNV', $vehicle->designation);
         $this->assertSame(VehicleType::BUS, $vehicle->type);
-        $this->assertSame(AirConditioning::PRESENT, $vehicle->airConditioning);
+        $this->assertSame(VehicleAirConditioning::PRESENT, $vehicle->airConditioning);
         $this->assertTrue($vehicle->usbPorts);
     }
 
@@ -47,7 +47,7 @@ class VehicleDetailsTest extends AbstractKernelTestCase
         $this->assertNull($vehicle->number);
         $this->assertNull($vehicle->designation);
         $this->assertSame(VehicleType::UNKNOWN, $vehicle->type);
-        $this->assertSame(AirConditioning::UNKNOWN, $vehicle->airConditioning);
+        $this->assertSame(VehicleAirConditioning::UNKNOWN, $vehicle->airConditioning);
         $this->assertFalse($vehicle->usbPorts);
     }
 
@@ -58,7 +58,7 @@ class VehicleDetailsTest extends AbstractKernelTestCase
             number: '12',
             designation: 'Citadis 302',
             type: VehicleType::TRAIN,
-            airConditioning: AirConditioning::PRESENT,
+            airConditioning: VehicleAirConditioning::PRESENT,
             usbPorts: true,
         );
 
