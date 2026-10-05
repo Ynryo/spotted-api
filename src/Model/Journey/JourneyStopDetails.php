@@ -2,6 +2,7 @@
 
 namespace App\Model\Journey;
 
+use App\Enum\StopStatus;
 use App\Enum\StopType;
 use App\Enum\VehicleType;
 
@@ -13,16 +14,17 @@ readonly class JourneyStopDetails
     public function __construct(
         public ?string              $stopName,
         public ?int                 $stopOrder,
+        public ?string              $stopRef,
         public ?string              $stopUIC,
-        public ?StopType            $stopType,
+        public ?StopType            $stopType = StopType::INTERMEDIATE,
         public ?string              $arrivalAimedTime,
         public ?string              $arrivalExpectedTime,
         public ?int                 $arrivalTimeDifference,
         public ?int                 $stopDuration,
-        public ?string              $departureAimedTime,
+        public string               $departureAimedTime,
         public ?string              $departureExpectedTime,
         public ?int                 $departureTimeDifference,
-        public string               $callStatus,
+        public ?StopStatus          $callStatus = StopStatus::SCHEDULED,
         public ?float               $distanceTraveled,
         public ?float               $latitude,
         public ?float               $longitude,
@@ -74,8 +76,9 @@ readonly class JourneyStopDetails
         return new self(
             stopName: $stop['stopName'] ?? null,
             stopOrder: $stopOrder,
+            stopRef: $stop['stopRef'] ?? null,
             stopUIC: $stopUIC,
-            stopType: self::getStopType($index, $stopsCount, $distanceTraveled),
+            stopType: StopType::fromData($index, $distanceTraveled, $stopsCount),
             arrivalAimedTime: $aimedArrival,
             arrivalExpectedTime: $expectedArrival,
             arrivalTimeDifference: self::calculateTimeDifference($expectedArrival, $aimedArrival),
@@ -83,7 +86,7 @@ readonly class JourneyStopDetails
             departureAimedTime: $aimedDeparture,
             departureExpectedTime: $expectedDeparture,
             departureTimeDifference: self::calculateTimeDifference($expectedDeparture, $aimedDeparture),
-            callStatus: $stop['callStatus'] ?? 'SCHEDULED',
+            callStatus: StopStatus::fromString($stop['callStatus'] ?? null),
             distanceTraveled: $distanceTraveled,
             latitude: isset($stop['latitude']) ? (float)$stop['latitude'] : null,
             longitude: isset($stop['longitude']) ? (float)$stop['longitude'] : null,
@@ -119,22 +122,5 @@ readonly class JourneyStopDetails
         }
 
         return null;
-    }
-
-    /**
-     * @param int $index
-     * @param int $stopsCount
-     * @param float|null $distanceTraveled
-     * @return StopType
-     */
-    private static function getStopType(
-        int $index,
-        int $stopsCount,
-        ?float $distanceTraveled = null
-    ): StopType
-    {
-        if ($distanceTraveled === 0.0) return StopType::START;
-        if ($index === $stopsCount - 1) return StopType::END;
-        return StopType::INTERMEDIATE;
     }
 }
