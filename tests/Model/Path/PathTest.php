@@ -94,12 +94,12 @@ class PathTest extends AbstractKernelTestCase
         ];
 
         $path = new Path(
-            id: 'line:STAS:T1',
+            journeyId: 'line:STAS:T1',
             points: $points,
             count: 1,
         );
 
-        $this->assertSame('line:STAS:T1', $path->id);
+        $this->assertSame('line:STAS:T1', $path->journeyId);
         $this->assertSame($points, $path->points);
         $this->assertSame(1, $path->count);
     }
@@ -116,7 +116,7 @@ class PathTest extends AbstractKernelTestCase
 
         $path = Path::fromArray('route-100', $data);
 
-        $this->assertSame('route-100', $path->id);
+        $this->assertSame('route-100', $path->journeyId);
         $this->assertSame(3, $path->count);
         $this->assertCount(3, $path->points);
 
@@ -149,7 +149,7 @@ class PathTest extends AbstractKernelTestCase
 
         $path = Path::fromArray('route-paris', $data);
 
-        $this->assertSame('route-paris', $path->id);
+        $this->assertSame('route-paris', $path->journeyId);
         $this->assertSame(1, $path->count);
         $this->assertSame(48.8566, $path->points[0]['latitude']);
         $this->assertSame(2.3522, $path->points[0]['longitude']);
@@ -180,7 +180,7 @@ class PathTest extends AbstractKernelTestCase
     {
         $path = Path::fromArray('empty-route', []);
 
-        $this->assertSame('empty-route', $path->id);
+        $this->assertSame('empty-route', $path->journeyId);
         $this->assertSame([], $path->points);
         $this->assertSame(0, $path->count);
     }
@@ -189,7 +189,7 @@ class PathTest extends AbstractKernelTestCase
     {
         $path = Path::fromArray('empty-points', ['p' => []]);
 
-        $this->assertSame('empty-points', $path->id);
+        $this->assertSame('empty-points', $path->journeyId);
         $this->assertSame([], $path->points);
         $this->assertSame(0, $path->count);
     }
@@ -293,7 +293,7 @@ class PathTest extends AbstractKernelTestCase
         $deserialized = $this->serializer->deserialize($json, Path::class, 'json');
 
         $this->assertInstanceOf(Path::class, $deserialized);
-        $this->assertSame($original->id, $deserialized->id);
+        $this->assertSame($original->journeyId, $deserialized->journeyId);
         $this->assertSame($original->count, $deserialized->count);
         $this->assertSame($original->points, $deserialized->points);
     }
@@ -304,7 +304,7 @@ class PathTest extends AbstractKernelTestCase
 
         $this->expectException(Error::class);
         // @phpstan-ignore-next-line
-        $path->id = 'modified-id';
+        $path->journeyId = 'modified-id';
     }
 
     protected function setUp(): void
