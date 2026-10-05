@@ -2,8 +2,8 @@
 
 namespace App\Tests\Model\Journey;
 
-use App\Enum\AirConditioning;
-use App\Enum\Occupancy;
+use App\Enum\VehicleAirConditioning;
+use App\Enum\JourneyOccupancy;
 use App\Enum\VehicleType;
 use App\Model\Journey\JourneyDetails;
 use App\Model\Vehicle\VehicleDetails;
@@ -54,13 +54,13 @@ class JourneyDetailsTest extends AbstractKernelTestCase
         $this->assertSame('715', $journey->vehicleNumber);
         $this->assertSame('Châteaucreux', $journey->destination);
         $this->assertSame('2026-09-30', $journey->serviceDate);
-        $this->assertSame(Occupancy::MEDIUM, $journey->occupancy);
-        $this->assertTrue($journey->wheelchairAccessible);
-        $this->assertTrue($journey->bikeAccessible);
+        $this->assertSame(JourneyOccupancy::MEDIUM, $journey->occupancy);
+        $this->assertTrue($journey->wheelchairAccessibility);
+        $this->assertTrue($journey->bikeAccessibility);
         $this->assertInstanceOf(VehicleDetails::class, $journey->vehicle);
         $this->assertSame(VehicleType::BUS, $journey->getVehicleType());
         $this->assertSame(VehicleType::BUS, $journey->vehicle->type);
-        $this->assertSame(AirConditioning::PRESENT, $journey->vehicle->airConditioning);
+        $this->assertSame(VehicleAirConditioning::PRESENT, $journey->vehicle->airConditioning);
     }
 
     public function testFromArrayWithMinimalPayload(): void
@@ -75,21 +75,21 @@ class JourneyDetailsTest extends AbstractKernelTestCase
         $this->assertNull($journey->lineId);
         $this->assertNull($journey->vehicle);
         $this->assertNull($journey->getVehicleType());
-        $this->assertSame(Occupancy::UNKNOWN, $journey->occupancy);
-        $this->assertFalse($journey->wheelchairAccessible);
-        $this->assertFalse($journey->bikeAccessible);
+        $this->assertSame(JourneyOccupancy::UNKNOWN, $journey->occupancy);
+        $this->assertFalse($journey->wheelchairAccessibility);
+        $this->assertFalse($journey->bikeAccessibility);
     }
 
     public function testBikeAllowedFallback(): void
     {
         $rawWithPlural = ['id' => '1', 'bikesAllowed' => true];
-        $this->assertTrue(JourneyDetails::fromArray($rawWithPlural)->bikeAccessible);
+        $this->assertTrue(JourneyDetails::fromArray($rawWithPlural)->bikeAccessibility);
 
         $rawWithSingular = ['id' => '2', 'bikeAllowed' => true];
-        $this->assertTrue(JourneyDetails::fromArray($rawWithSingular)->bikeAccessible);
+        $this->assertTrue(JourneyDetails::fromArray($rawWithSingular)->bikeAccessibility);
 
         $rawWithout = ['id' => '3'];
-        $this->assertFalse(JourneyDetails::fromArray($rawWithout)->bikeAccessible);
+        $this->assertFalse(JourneyDetails::fromArray($rawWithout)->bikeAccessibility);
     }
 
     public function testJsonSerializationContractMatchesMobileAppExpectations(): void
