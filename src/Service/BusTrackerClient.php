@@ -74,10 +74,10 @@ class BusTrackerClient
      *
      * @return array<string, mixed>|null
      */
-    public function getRoutePath(string $pathRef): ?array
+    public function getRoutePath(string $journeyId): ?array
     {
         try {
-            $response = $this->httpClient->request('GET', self::BASE_URL . "paths/{$pathRef}", [
+            $response = $this->httpClient->request('GET', self::BASE_URL . "vehicle-journeys/{$journeyId}/paths", [
                 'headers' => [
                     'Accept' => 'application/json',
                 ],
