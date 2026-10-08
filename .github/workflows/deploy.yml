@@ -55,4 +55,7 @@ jobs:
           key: ${{ secrets.DEBIAN_SSH_KEY }}
           script: |
             cd /var/www/html/spotted-api
+            git fetch origin main
+            git reset --hard origin/main
+            chmod +x deploy.sh
             ./deploy.sh
