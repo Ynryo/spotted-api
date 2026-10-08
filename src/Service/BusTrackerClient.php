@@ -70,6 +70,29 @@ class BusTrackerClient
     }
 
     /**
+     * Récupère le tracé géographique (avec déviations éventuelles) d'un trajet de véhicule
+     *
+     * @return array<string, mixed>|null
+     */
+    public function getVehicleJourneyPaths(string $vehicleJourneyId): ?array
+    {
+        try {
+            $response = $this->httpClient->request('GET', self::BASE_URL . "vehicle-journeys/{$vehicleJourneyId}/paths", [
+                'headers' => [
+                    'Accept' => 'application/json',
+                ],
+                'timeout' => 10,
+            ]);
+
+            if ($response->getStatusCode() !== 200) return null;
+
+            return $response->toArray();
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    /**
      * Récupère le tracé géographique (polyline) d'une ligne
      *
      * @return array<string, mixed>|null
