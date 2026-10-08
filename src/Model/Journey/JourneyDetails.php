@@ -17,18 +17,18 @@ readonly class JourneyDetails
      */
     public function __construct(
         public string                         $id,
-        public int                            $lineId,
-        public ?string                        $destination,
-        public ?string                        $serviceDate,
-        public JourneyOccupancy               $occupancy,
-        public JourneyWheelchairAccessibility $wheelchairAccessibility,
-        public JourneyBikeAccessibility       $bikeAccessibility,
-        public array                          $stops,
-        public ?JourneyPosition               $position,
-        public ?Network                       $network,
-        public ?VehicleDetails                $vehicle,
-        public ?Path                          $path,
-        public string                         $updatedAt,
+        public ?int                           $lineId = null,
+        public ?string                        $destination = null,
+        public ?string                        $serviceDate = null,
+        public JourneyOccupancy               $occupancy = JourneyOccupancy::UNKNOWN,
+        public JourneyWheelchairAccessibility $wheelchairAccessibility = JourneyWheelchairAccessibility::UNKNOWN,
+        public JourneyBikeAccessibility       $bikeAccessibility = JourneyBikeAccessibility::UNKNOWN,
+        public array                          $stops = [],
+        public ?JourneyPosition               $position = null,
+        public ?Network                       $network = null,
+        public ?VehicleDetails                $vehicle = null,
+        public ?Path                          $path = null,
+        public ?string                        $updatedAt = null,
     )
     {
     }
@@ -41,9 +41,19 @@ readonly class JourneyDetails
         return $this->vehicle?->type;
     }
 
-    public function getVehicleNumber(): ?int
+    public function getVehicleNumber(): ?string
     {
-        return $this->vehicle?->number;
+        return $this->vehicle?->number !== null ? (string)$this->vehicle->number : null;
+    }
+
+    public function isWheelchairAccessible(): bool
+    {
+        return $this->wheelchairAccessibility === JourneyWheelchairAccessibility::ACCESSIBLE;
+    }
+
+    public function isBikeAccessible(): bool
+    {
+        return $this->bikeAccessibility === JourneyBikeAccessibility::ACCESSIBLE;
     }
 
     /**
@@ -52,28 +62,48 @@ readonly class JourneyDetails
      */
     public static function fromArray(
         array           $journey,
-        ?Path           $path,
-        ?Network        $network,
-        ?VehicleDetails $vehicle,
+        ?Path           $path = null,
+        ?Network        $network = null,
+        ?VehicleDetails $vehicle = null,
         array           $stops = [],
     ): ?self
     {
-        if (empty($journey) || !isset($journey['id'], $journey['lineId'], $journey['position'])) {
+        if (empty($journey) || !isset($journey['id'])) {
             return null;
         }
 
+        $wheelchairRaw = $journey['wheelchairAccessible'] ?? null;
+        if (is_bool($wheelchairRaw)) {
+            $wheelchairAccessibility = JourneyWheelchairAccessibility::fromBool($wheelchairRaw);
+        } else {
+            $wheelchairAccessibility = JourneyWheelchairAccessibility::tryFrom((string)$wheelchairRaw) ?? JourneyWheelchairAccessibility::UNKNOWN;
+        }
+
+        $bikeRaw = $journey['bikesAllowed'] ?? $journey['bikeAllowed'] ?? null;
+        if (is_bool($bikeRaw)) {
+            $bikeAccessibility = JourneyBikeAccessibility::fromBool($bikeRaw);
+        } else {
+            $bikeAccessibility = JourneyBikeAccessibility::tryFrom((string)$bikeRaw) ?? JourneyBikeAccessibility::UNKNOWN;
+        }
+
+        $position = !empty($journey['position']) && is_array($journey['position'])
+            ? JourneyPosition::fromArray($journey['position'])
+            : null;
+
+        $vehicleObj = $vehicle ?? (!empty($journey['vehicle']) && is_array($journey['vehicle']) ? VehicleDetails::fromArray($journey['vehicle']) : null);
+
         return new self(
             id: (string)$journey['id'],
-            lineId: (int)$journey['lineId'],
+            lineId: isset($journey['lineId']) ? (int)$journey['lineId'] : null,
             destination: $journey['destination'] ?? null,
             serviceDate: $journey['serviceDate'] ?? null,
             occupancy: JourneyOccupancy::fromString($journey['occupancy'] ?? null),
-            wheelchairAccessibility: JourneyWheelchairAccessibility::fromBool($journey['wheelchairAccessible'] ?? null),
-            bikeAccessibility: JourneyBikeAccessibility::fromBool($journey['bikesAllowed'] ?? null),
+            wheelchairAccessibility: $wheelchairAccessibility,
+            bikeAccessibility: $bikeAccessibility,
             stops: $stops,
-            position: JourneyPosition::fromArray($journey['position']),
+            position: $position,
             network: $network,
-            vehicle: $vehicle,
+            vehicle: $vehicleObj,
             path: $path,
             updatedAt: $journey['updatedAt'] ?? null,
         );

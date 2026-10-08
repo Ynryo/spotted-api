@@ -11,33 +11,33 @@ readonly class Network
         public int     $id,
         public string  $ref,
         public string  $name,
-        public int     $regionId,
-        public ?string $authority,
-        public ?string $countryCode,
-        public ?string $timezone,
-        public ?string $logoHref,
-        public ?string $color,
-        public ?string $textColor,
-        public ?bool   $hasVehiclesFeature,
-        public ?array  $embedMapCenter,
+        public ?int    $regionId = null,
+        public ?string $authority = null,
+        public ?string $countryCode = 'FR',
+        public ?string $timezone = 'Europe/Paris',
+        public ?string $logoHref = null,
+        public ?string $color = '#000000',
+        public ?string $textColor = '#FFFFFF',
+        public ?bool   $hasVehiclesFeature = false,
+        public ?array  $embedMapCenter = null,
     )
     {
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param array<string, mixed>|null $data
      */
     public static function fromArray(?array $data = null): ?self
     {
-        if (empty($data) || !isset($data['id'], $data['ref'], $data['name'], $data['regionId'])) {
+        if (empty($data)) {
             return null;
         }
 
         return new self(
-            id: (int)$data['id'],
-            ref: (string)$data['ref'],
-            name: (string)$data['name'],
-            regionId: (int)$data['regionId'],
+            id: (int)($data['id'] ?? 0),
+            ref: (string)($data['ref'] ?? ''),
+            name: (string)($data['name'] ?? ''),
+            regionId: isset($data['regionId']) ? (int)$data['regionId'] : null,
             authority: $data['authority'] ?? null,
             countryCode: (string)($data['countryCode'] ?? 'FR'),
             timezone: (string)($data['timezone'] ?? 'Europe/Paris'),

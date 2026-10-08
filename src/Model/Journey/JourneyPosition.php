@@ -17,18 +17,18 @@ readonly class JourneyPosition
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param array<string, mixed>|null $data
      */
-    public static function fromArray(array $data): ?self
+    public static function fromArray(?array $data = null): ?self
     {
-        if (empty($data) || !isset($data['latitude'], $data['longitude'])) {
+        if ($data === null) {
             return null;
         }
 
         return new self(
-            latitude: (float)$data['latitude'],
-            longitude: (float)$data['longitude'],
-            bearing: (float)($data['bearing'] ?? 0),
+            latitude: (float)($data['latitude'] ?? 0.0),
+            longitude: (float)($data['longitude'] ?? 0.0),
+            bearing: (float)($data['bearing'] ?? 0.0),
             atStop: (bool)($data['atStop'] ?? false),
             distanceTraveled: (float)($data['distanceTraveled'] ?? 0.0),
             type: $data['type'] ?? null,
