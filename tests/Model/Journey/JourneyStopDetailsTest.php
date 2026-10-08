@@ -2,6 +2,7 @@
 
 namespace App\Tests\Model\Journey;
 
+use App\Enum\StopStatus;
 use App\Enum\StopType;
 use App\Enum\VehicleType;
 use App\Model\Journey\JourneyStopDetails;
@@ -43,7 +44,7 @@ class JourneyStopDetailsTest extends TestCase
             'latitude' => 45.4431,
             'longitude' => 4.4001,
             'platformName' => 'Quai 1',
-            'callStatus' => 'CANCELLED',
+            'callStatus' => 'SKIPPED',
             'flags' => ['EXTRA'],
         ];
 
@@ -57,7 +58,7 @@ class JourneyStopDetailsTest extends TestCase
         $this->assertSame(3, $stop->departureTimeDifference);
         // expected stop duration: 14:08 - 14:02 = 6 min
         $this->assertSame(6, $stop->stopDuration);
-        $this->assertSame('CANCELLED', $stop->callStatus);
+        $this->assertSame(StopStatus::SKIPPED, $stop->callStatus);
         $this->assertSame(0.0, $stop->distanceTraveled);
         $this->assertSame(45.4431, $stop->latitude);
         $this->assertSame(4.4001, $stop->longitude);
