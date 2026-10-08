@@ -121,18 +121,27 @@ class PathTest extends AbstractKernelTestCase
         $this->assertCount(3, $path->points);
 
         $this->assertSame([
+            'lat' => 45.4397,
+            'long' => 4.3872,
+            'dist' => 0.0,
             'latitude' => 45.4397,
             'longitude' => 4.3872,
             'distance' => 0.0,
         ], $path->points[0]);
 
         $this->assertSame([
+            'lat' => 45.4410,
+            'long' => 4.3895,
+            'dist' => 150.3,
             'latitude' => 45.4410,
             'longitude' => 4.3895,
             'distance' => 150.3,
         ], $path->points[1]);
 
         $this->assertSame([
+            'lat' => 45.4452,
+            'long' => 4.3920,
+            'dist' => 520.8,
             'latitude' => 45.4452,
             'longitude' => 4.3920,
             'distance' => 520.8,
@@ -269,6 +278,7 @@ class PathTest extends AbstractKernelTestCase
         $this->assertArrayHasKey('id', $json);
         $this->assertArrayHasKey('points', $json);
         $this->assertArrayHasKey('count', $json);
+        $this->assertArrayHasKey('segments', $json);
 
         $this->assertSame('json-test', $json['id']);
         $this->assertSame(1, $json['count']);
