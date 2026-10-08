@@ -5,7 +5,8 @@ echo "🚀 Début du déploiement de spotted-api..."
 
 # 1. Récupérer le dernier code source
 echo "📥 Récupération des dernières modifications Git..."
-git pull origin main
+git fetch origin main
+git reset --hard origin/main
 
 # 2. Reconstruire et relancer les conteneurs Docker
 echo "🐳 Reconstruction des images et redémarrage des conteneurs..."
