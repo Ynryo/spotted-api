@@ -26,13 +26,14 @@ readonly class RegionService
         if ($cachedRegions) $rawRegions = json_decode($cachedRegions, true);
         else {
             $rawRegions = $this->client->getRegions();
+            if (!$rawRegions) return null;
             $this->redis->set('regions', json_encode($rawRegions), ['ex' => CacheTtl::LONG->value]);
         }
-        if (!$rawRegions) return null;
 
         $regions = [];
         foreach ($rawRegions as $rawRegion) {
-            $regions[] = Region::fromArray($rawRegion);
+            $region = Region::fromArray($rawRegion);
+            if ($region !== null) $regions[] = $region;
         }
         return $regions;
     }

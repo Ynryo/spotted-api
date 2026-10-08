@@ -16,23 +16,22 @@ readonly class PathService
     }
 
     /**
-     * Récupère le tracé géographique d'un trajet de véhicule (avec déviations éventuelles)
+     * Récupère le tracé géographique (polyline) d'une ligne
+     * @param string $journeyId
+     * @return ?Path
      */
-    public function getPath(string $vehicleJourneyId): ?Path
+    public function getPath(string $journeyId): ?Path
     {
-        $cacheKey = "path_{$vehicleJourneyId}";
+        $cacheKey = 'path::' . $journeyId;
         $cachedPath = $this->redis->get($cacheKey);
 
-        if ($cachedPath) {
-            $pathData = json_decode($cachedPath, true);
-        } else {
-            $pathData = $this->client->getVehicleJourneyPaths($vehicleJourneyId);
-            if (!$pathData) {
-                return null;
-            }
-            $this->redis->set($cacheKey, json_encode($pathData), ['ex' => CacheTtl::SHORT->value]);
+        if ($cachedPath) $rawPath = json_decode($cachedPath, true);
+        else {
+            $rawPath = $this->client->getRoutePath($journeyId);
+            if (!$rawPath) return null;
+            $this->redis->set($cacheKey, json_encode($rawPath), ['ex' => CacheTtl::LONG->value]);
         }
 
-        return Path::fromArray($pathData);
+        return Path::fromArray($rawPath);
     }
 }

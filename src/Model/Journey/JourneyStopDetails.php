@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Model\Vehicle;
+namespace App\Model\Journey;
 
+use App\Enum\StopStatus;
 use App\Enum\StopType;
 use App\Enum\VehicleType;
 
-readonly class VehicleStopDetails
+readonly class JourneyStopDetails
 {
     /**
      * @param string[] $flags
@@ -13,20 +14,21 @@ readonly class VehicleStopDetails
     public function __construct(
         public ?string              $stopName,
         public ?int                 $stopOrder,
+        public ?string              $stopRef,
         public ?string              $stopUIC,
-        public ?StopType            $stopType,
-        public ?string              $arrivalAimedTime,
-        public ?string              $arrivalExpectedTime,
-        public ?int                 $arrivalTimeDifference,
-        public ?int                 $stopDuration,
-        public ?string              $departureAimedTime,
-        public ?string              $departureExpectedTime,
-        public ?int                 $departureTimeDifference,
-        public string               $callStatus,
-        public ?float               $distanceTraveled,
-        public ?float               $latitude,
-        public ?float               $longitude,
-        public ?VehicleStopPlatform $platform,
+        public ?StopType            $stopType = StopType::INTERMEDIATE,
+        public ?string              $arrivalAimedTime = null,
+        public ?string              $arrivalExpectedTime = null,
+        public ?int                 $arrivalTimeDifference = null,
+        public ?int                 $stopDuration = null,
+        public ?string              $departureAimedTime = null,
+        public ?string              $departureExpectedTime = null,
+        public ?int                 $departureTimeDifference = null,
+        public ?StopStatus          $callStatus = StopStatus::SCHEDULED,
+        public ?float               $distanceTraveled = null,
+        public ?float               $latitude = null,
+        public ?float               $longitude = null,
+        public ?JourneyStopPlatform $platform = null,
         public array                $flags = [],
     )
     {
@@ -37,7 +39,7 @@ readonly class VehicleStopDetails
      */
     public static function fromArray(
         array                $stop,
-        ?VehicleStopPlatform $guessedPlatform = null,
+        ?JourneyStopPlatform $guessedPlatform = null,
         int                  $index = 0,
         int                  $stopsCount = 0,
         ?VehicleType         $vehicleType = null
@@ -59,7 +61,7 @@ readonly class VehicleStopDetails
         $expectedDeparture = $stop['expectedTime'] ?? null;
 
         $platform = (!empty($stop['platformName']))
-            ? VehicleStopPlatform::fromArray($stop) //bt
+            ? JourneyStopPlatform::fromArray($stop) //bt
             : $guessedPlatform; //ct
 
         $rawOrder = $stop['order'] ?? $stop['stopOrder'] ?? $stop['stopPointOrder'] ?? null;
@@ -74,8 +76,9 @@ readonly class VehicleStopDetails
         return new self(
             stopName: $stop['stopName'] ?? null,
             stopOrder: $stopOrder,
+            stopRef: $stop['stopRef'] ?? null,
             stopUIC: $stopUIC,
-            stopType: self::getStopType($index, $stopsCount, $distanceTraveled),
+            stopType: StopType::fromData($index, $distanceTraveled, $stopsCount),
             arrivalAimedTime: $aimedArrival,
             arrivalExpectedTime: $expectedArrival,
             arrivalTimeDifference: self::calculateTimeDifference($expectedArrival, $aimedArrival),
@@ -83,7 +86,7 @@ readonly class VehicleStopDetails
             departureAimedTime: $aimedDeparture,
             departureExpectedTime: $expectedDeparture,
             departureTimeDifference: self::calculateTimeDifference($expectedDeparture, $aimedDeparture),
-            callStatus: $stop['callStatus'] ?? 'SCHEDULED',
+            callStatus: StopStatus::fromString($stop['callStatus'] ?? null),
             distanceTraveled: $distanceTraveled,
             latitude: isset($stop['latitude']) ? (float)$stop['latitude'] : null,
             longitude: isset($stop['longitude']) ? (float)$stop['longitude'] : null,
@@ -119,22 +122,5 @@ readonly class VehicleStopDetails
         }
 
         return null;
-    }
-
-    /**
-     * @param int $index
-     * @param int $stopsCount
-     * @param float|null $distanceTraveled
-     * @return StopType
-     */
-    private static function getStopType(
-        int $index,
-        int $stopsCount,
-        ?float $distanceTraveled = null
-    ): StopType
-    {
-        if ($distanceTraveled === 0.0) return StopType::START;
-        if ($index === $stopsCount - 1) return StopType::END;
-        return StopType::INTERMEDIATE;
     }
 }

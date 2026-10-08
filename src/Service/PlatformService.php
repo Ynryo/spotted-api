@@ -3,7 +3,7 @@
 namespace App\Service;
 
 use App\Enum\CacheTtl;
-use App\Model\Vehicle\VehicleStopPlatform;
+use App\Model\Journey\JourneyStopPlatform;
 use Redis;
 
 readonly class PlatformService
@@ -18,26 +18,25 @@ readonly class PlatformService
     /**
      * @param string $stopUIC
      * @param string $trainNum
-     * @return VehicleStopPlatform|null
+     * @return JourneyStopPlatform|null
      */
-    public function guessPlatform(string $stopUIC, string $trainNum): ?VehicleStopPlatform
+    public function guessPlatform(string $stopUIC, string $trainNum): ?JourneyStopPlatform
     {
-        $platform = $this->redis->get("platform:$stopUIC:$trainNum");
-        if (!$platform) {
-            $responsesPlatform = $this->client->guessPlatform($stopUIC, $trainNum);
-            $platformData = null;
-            foreach($responsesPlatform as $responsePlatform) {
-                if ($responsePlatform['percentage'] > $platformData['percentage']) {
-                    $platformData = $responsePlatform;
+        $rawBestPlatform = null;
+        $cachedBestPlatform = $this->redis->get("platform:$stopUIC:$trainNum");
+        if ($cachedBestPlatform) $rawBestPlatform = json_decode($cachedBestPlatform, true);
+        else {
+            $rawPlatforms = $this->client->guessPlatform($stopUIC, $trainNum);
+            if (!$rawPlatforms) return null;
+
+            //on prend la meilleure
+            foreach ($rawPlatforms as $rawPlatform) {
+                if (!isset($rawBestPlatform) || ($rawPlatform['percentage'] > $rawBestPlatform['percentage'])) { //init $platformData with the first response
+                    $rawBestPlatform = $rawPlatform;
                 }
             }
-            if (!$platformData) return null;
-
-            $this->redis->set("platform:$stopUIC:$trainNum", json_encode($platformData), ['ex' => CacheTtl::REALTIME->value]);
-            return VehicleStopPlatform::fromArray($platformData);
+            $this->redis->set("platform:$stopUIC:$trainNum", json_encode($rawBestPlatform), ['ex' => CacheTtl::REALTIME->value]);
         }
-
-        $decoded = json_decode($platform, true);
-        return is_array($decoded) ? VehicleStopPlatform::fromArray($decoded) : null;
+        return JourneyStopPlatform::fromArray($rawBestPlatform);
     }
 }

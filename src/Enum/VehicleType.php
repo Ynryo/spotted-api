@@ -6,4 +6,12 @@ enum VehicleType: string
 {
     case TRAIN = "TRAIN";
     case BUS = "BUS";
+    case TRAMWAY = "TRAMWAY";
+    case COACH = "COACH";
+    case UNKNOWN = "UNKNOWN";
+
+    public static function fromString(?string $value): self
+    {
+        return self::tryFrom((string) $value) ?? self::UNKNOWN;
+    }
 }

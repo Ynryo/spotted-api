@@ -4,8 +4,8 @@ namespace App\Service;
 
 use App\Enum\CacheTtl;
 use App\Enum\VehicleType;
-use App\Model\Vehicle\VehicleDetails;
-use App\Model\Vehicle\VehicleStopDetails;
+use App\Model\Journey\JourneyDetails;
+use App\Model\Journey\JourneyStopDetails;
 use Redis;
 
 readonly class JourneyDetailsService
@@ -16,33 +16,35 @@ readonly class JourneyDetailsService
         private PathService      $pathService,
         private NetworkService   $networkService,
         private PlatformService  $platformService,
+        private VehicleService   $vehicleService,
     )
     {
     }
 
-    public function getJourneyDetails(string $vehicleJourney): ?VehicleDetails
+    public function getJourneyDetails(string $journeyId): ?JourneyDetails
     {
-        $cachedJourney = $this->redis->get($vehicleJourney);
+        $cachedJourney = $this->redis->get($journeyId);
         if ($cachedJourney) $rawJourney = json_decode($cachedJourney, true);
         else {
-            $rawJourney = $this->client->getVehicleJourney($vehicleJourney);
-            if ($rawJourney) $this->redis->set($vehicleJourney, json_encode($rawJourney), ['ex' => CacheTtl::REALTIME->value]);
+            $rawJourney = $this->client->getVehicleJourney($journeyId);
+            if (!$rawJourney) return null;
+            $this->redis->set($journeyId, json_encode($rawJourney), ['ex' => CacheTtl::REALTIME->value]);
         }
-        if (!$rawJourney) return null;
 
-        // Path (récupéré depuis vehicle-journeys/{id}/paths avec déviations éventuelles)
-        $path = null;
-        $journeyId = $rawJourney['id'] ?? $vehicleJourney;
-        if ($journeyId) $path = $this->pathService->getPath($journeyId);
+        // Path - on a pas les data donc on get
+        $path = $this->pathService->getPath($journeyId);
 
-        // Network
-        $network = null;
+        // Network - on a pas les data donc on get
         $networkId = $rawJourney['networkId'] ?? null;
         if ($networkId) $network = $this->networkService->getNetwork($networkId);
 
+        //Vehicle - on a pas toutes les data donc on get aussi
+        $vehicleId = $rawJourney['vehicle']['id'] ?? null;
+        if ($vehicleId) $vehicle = $this->vehicleService->getVehicle($vehicleId);
+
         //vehicle type et number
         $vehicleType = self::getVehicleType($rawJourney['id'] ?? '');
-        $vehicleNumber = (string) ($rawJourney['vehicle']['number'] ?? null);
+        $vehicleNumber = (string)($rawJourney['vehicle']['number'] ?? null);
 
         // Transformation POO des arrêts (calls)
         $stops = [];
@@ -54,15 +56,15 @@ readonly class JourneyDetailsService
                 $stopUIC = self::getStopUIC($call);
                 if ($stopUIC) $guessedPlatform = $this->platformService->guessPlatform($stopUIC, $vehicleNumber);
             }
-            $stops[] = VehicleStopDetails::fromArray($call, $guessedPlatform, $index, $stopsCount, $vehicleType);
+            $stops[] = JourneyStopDetails::fromArray($call, $guessedPlatform, $index, $stopsCount, $vehicleType);
         }
 
-        return VehicleDetails::fromArray(
+        return JourneyDetails::fromArray(
             $rawJourney,
             $path,
-            $network,
-            $stops,
-            $vehicleType
+            $network ?? null,
+            $vehicle ?? null,
+            $stops
         );
     }
 
