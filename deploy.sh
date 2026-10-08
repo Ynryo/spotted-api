@@ -16,12 +16,17 @@ docker compose up -d --remove-orphans
 echo "📦 Installation des dépendances Composer..."
 docker compose exec -T php composer install --no-dev --optimize-autoloader
 
-# 4. Installer les assets de l'API (Swagger UI)
+# 4. Vider et réchauffer le cache Symfony
+echo "🧹 Nettoyage du cache de production..."
+docker compose exec -T php rm -rf var/cache/*
+docker compose exec -T php php bin/console cache:clear --env=prod
+
+# 5. Installer les assets de l'API (Swagger UI)
 echo "🎨 Installation des assets publics..."
 docker compose exec -T php php bin/console assets:install public
 
-# 5. Vider et réchauffer le cache Symfony
-echo "🧹 Nettoyage du cache de production..."
-docker compose exec -T php php bin/console cache:clear --env=prod
+# 6. Redémarrer le worker pour prendre en compte les changements
+echo "🔄 Redémarrage du worker..."
+docker compose restart worker
 
 echo "✅ Déploiement terminé avec succès sur https://api.spotted.ynryo.fr !"
