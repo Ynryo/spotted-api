@@ -43,7 +43,7 @@ services:
       - spotted-network
     command: ["php", "bin/console", "app:sync-markers", "--watch"]
     healthcheck:
-      test: [ "CMD-SHELL", "php -r \"\\$r = new Redis(); \\$r->connect('redis', 6379); exit(\\$r->exists('markers') ? 0 : 1);\"" ]
+      test: [ "CMD-SHELL", "php -r \"$$r = new Redis(); $$r->connect('redis', 6379); exit($$r->exists('markers') ? 0 : 1);\"" ]
       interval: 30s
       timeout: 5s
       retries: 3
