@@ -132,7 +132,7 @@ class EurostarSleeperClient implements TransportProviderInterface
     public function getNetworks(): ?array
     {
         try {
-            $response = $this->httpClient->request('GET', "networks", [
+            $response = $this->httpClient->request('GET', self::BASE_URL . "networks", [
                 'headers' => [
                     'Accept' => 'application/json',
                 ],
