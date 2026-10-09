@@ -2,10 +2,11 @@
 
 namespace App\Service;
 
+use App\Contract\TransportProviderInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Throwable;
 
-class BusTrackerClient
+class BusTrackerClient implements TransportProviderInterface
 {
     private const string BASE_URL = 'https://bus-tracker.fr/api/';
 
@@ -21,6 +22,16 @@ class BusTrackerClient
         private readonly HttpClientInterface $httpClient
     )
     {
+    }
+
+    public function getName(): string
+    {
+        return 'Bus-Tracker';
+    }
+
+    public function supportsJourney(string $journeyId): bool
+    {
+        return !str_contains($journeyId, 'Eurostar') && !str_contains($journeyId, 'Sleeper');
     }
 
     /**
