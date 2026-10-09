@@ -2,15 +2,21 @@
 
 namespace App\Service;
 
+use App\Contract\TransportProviderInterface;
 use App\Enum\CacheTtl;
 use App\Model\Network\Network;
 use Redis;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 readonly class NetworkService
 {
+    /**
+     * @param iterable<TransportProviderInterface> $providers
+     */
     public function __construct(
-        private BusTrackerClient $client,
-        private Redis            $redis
+        #[AutowireIterator('app.transport_provider')]
+        private iterable $providers,
+        private Redis    $redis
     )
     {
     }
@@ -23,15 +29,31 @@ readonly class NetworkService
         $cachedNetworks = $this->redis->get('networks');
         if ($cachedNetworks) $rawNetworks = json_decode($cachedNetworks, true);
         else {
-            $rawNetworks = $this->client->getNetworks();
-            if (!$rawNetworks) return null;
+            $rawNetworks = [];
+            foreach ($this->providers as $provider) {
+                try {
+                    $providerNetworks = $provider->getNetworks();
+                    if (is_array($providerNetworks)) {
+                        $rawNetworks = array_merge($rawNetworks, $providerNetworks);
+                    }
+                } catch (\Throwable) {
+                    // Ignorer l'erreur d'un provider pour ne pas bloquer les autres
+                }
+            }
+
+            if (empty($rawNetworks)) return null;
+
             $this->redis->set('networks', json_encode($rawNetworks), ['ex' => CacheTtl::LONG->value]);
         }
 
         $networks = [];
+        $seenIds = [];
         foreach ($rawNetworks as $rawNetwork) {
             $network = Network::fromArray($rawNetwork);
-            if ($network !== null) $networks[] = $network;
+            if ($network !== null && !isset($seenIds[$network->id])) {
+                $seenIds[$network->id] = true;
+                $networks[] = $network;
+            }
         }
         return $networks;
     }
@@ -43,9 +65,10 @@ readonly class NetworkService
     public function getNetwork(int $networkId): ?Network
     {
         $networks = $this->getNetworks();
+        if (!$networks) return null;
 
         foreach ($networks as $network) {
-            if ($network->id == $networkId) return $network;
+            if ($network->id === $networkId) return $network;
         }
 
         return null;
@@ -60,12 +83,18 @@ readonly class NetworkService
         $cachedNetworkLines = $this->redis->get("network_lines_{$networkId}");
         if ($cachedNetworkLines) return json_decode($cachedNetworkLines, true);
 
-        $rawNetworkLines = $this->client->getNetworkLines($networkId);
-        if (!$rawNetworkLines) return null;
+        foreach ($this->providers as $provider) {
+            try {
+                $rawNetworkLines = $provider->getNetworkLines($networkId);
+                if (!empty($rawNetworkLines)) {
+                    $this->redis->set("network_lines_{$networkId}", json_encode($rawNetworkLines), ['ex' => CacheTtl::LONG->value]);
+                    return $rawNetworkLines;
+                }
+            } catch (\Throwable) {
+                // Essayer le provider suivant
+            }
+        }
 
-        $this->redis->set("network_lines_{$networkId}", json_encode($rawNetworkLines), ['ex' => CacheTtl::LONG->value]);
-
-        return $rawNetworkLines;
+        return null;
     }
 }
-

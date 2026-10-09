@@ -6,17 +6,20 @@ use App\Enum\CacheTtl;
 use App\Enum\VehicleType;
 use App\Model\Journey\JourneyDetails;
 use App\Model\Journey\JourneyStopDetails;
+use App\Model\Network\Network;
+use App\Model\Vehicle\VehicleDetails;
 use Redis;
 
 readonly class JourneyDetailsService
 {
     public function __construct(
-        private BusTrackerClient $client,
-        private Redis            $redis,
-        private PathService      $pathService,
-        private NetworkService   $networkService,
-        private PlatformService  $platformService,
-        private VehicleService   $vehicleService,
+        private BusTrackerClient      $client,
+        private EurostarSleeperClient $eurostarSleeperClient,
+        private Redis                 $redis,
+        private PathService           $pathService,
+        private NetworkService        $networkService,
+        private PlatformService       $platformService,
+        private VehicleService        $vehicleService,
     )
     {
     }
@@ -24,9 +27,18 @@ readonly class JourneyDetailsService
     public function getJourneyDetails(string $journeyId): ?JourneyDetails
     {
         $cachedJourney = $this->redis->get($journeyId);
-        if ($cachedJourney) $rawJourney = json_decode($cachedJourney, true);
-        else {
-            $rawJourney = $this->client->getVehicleJourney($journeyId);
+        if ($cachedJourney) {
+            $rawJourney = json_decode($cachedJourney, true);
+        } else {
+            if ($this->isEurostarOrSleeper($journeyId)) {
+                $rawJourney = $this->eurostarSleeperClient->getVehicleJourney($journeyId);
+            } else {
+                $rawJourney = $this->client->getVehicleJourney($journeyId);
+                if (!$rawJourney) {
+                    $rawJourney = $this->eurostarSleeperClient->getVehicleJourney($journeyId);
+                }
+            }
+
             if (!$rawJourney) return null;
             $this->redis->set($journeyId, json_encode($rawJourney), ['ex' => CacheTtl::REALTIME->value]);
         }
@@ -35,16 +47,30 @@ readonly class JourneyDetailsService
         $path = $this->pathService->getPath($journeyId);
 
         // Network - on a pas les data donc on get
+        $network = null;
         $networkId = $rawJourney['networkId'] ?? null;
-        if ($networkId) $network = $this->networkService->getNetwork($networkId);
+        if ($networkId) {
+            $network = $this->networkService->getNetwork((int)$networkId);
+        }
 
-        //Vehicle - on a pas toutes les data donc on get aussi
-        $vehicleId = $rawJourney['vehicle']['id'] ?? null;
-        if ($vehicleId) $vehicle = $this->vehicleService->getVehicle($vehicleId);
-
-        //vehicle type et number
-        $vehicleType = self::getVehicleType($rawJourney['id'] ?? '');
+        // vehicle type et number
+        $vehicleType = self::getVehicleType($rawJourney['id'] ?? $journeyId);
         $vehicleNumber = (string)($rawJourney['vehicle']['number'] ?? null);
+
+        // Vehicle - on a pas toutes les data donc on get aussi
+        $vehicle = null;
+        $vehicleId = $rawJourney['vehicle']['id'] ?? null;
+        if ($vehicleId) {
+            $vehicle = $this->vehicleService->getVehicle($vehicleId);
+        }
+
+        if ($vehicle === null && !empty($rawJourney['vehicle']) && is_array($rawJourney['vehicle'])) {
+            $rawVehicle = $rawJourney['vehicle'];
+            if (empty($rawVehicle['type']) || $rawVehicle['type'] === VehicleType::UNKNOWN->value) {
+                $rawVehicle['type'] = $vehicleType->value;
+            }
+            $vehicle = VehicleDetails::fromArray($rawVehicle);
+        }
 
         // Transformation POO des arrêts (calls)
         $stops = [];
@@ -74,7 +100,14 @@ readonly class JourneyDetailsService
      */
     private static function getVehicleType(string $id): VehicleType
     {
-        return (str_starts_with($id, "SNCF")) ? VehicleType::TRAIN : VehicleType::BUS;
+        return (str_starts_with($id, "SNCF") || str_contains($id, "Eurostar") || str_contains($id, "Sleeper"))
+            ? VehicleType::TRAIN
+            : VehicleType::BUS;
+    }
+
+    private function isEurostarOrSleeper(string $journeyId): bool
+    {
+        return str_contains($journeyId, 'Eurostar') || str_contains($journeyId, 'Sleeper');
     }
 
     /**
