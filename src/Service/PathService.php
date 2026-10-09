@@ -9,8 +9,9 @@ use Redis;
 readonly class PathService
 {
     public function __construct(
-        private BusTrackerClient $client,
-        private Redis            $redis
+        private BusTrackerClient      $busTrackerClient,
+        private EurostarSleeperClient $eurostarSleeperClient,
+        private Redis                 $redis
     )
     {
     }
@@ -25,13 +26,27 @@ readonly class PathService
         $cacheKey = 'path::' . $journeyId;
         $cachedPath = $this->redis->get($cacheKey);
 
-        if ($cachedPath) $rawPath = json_decode($cachedPath, true);
-        else {
-            $rawPath = $this->client->getRoutePath($journeyId);
+        if ($cachedPath) {
+            $rawPath = json_decode($cachedPath, true);
+        } else {
+            if ($this->isEurostarOrSleeper($journeyId)) {
+                $rawPath = $this->eurostarSleeperClient->getRoutePath($journeyId);
+            } else {
+                $rawPath = $this->busTrackerClient->getRoutePath($journeyId);
+                if (!$rawPath) {
+                    $rawPath = $this->eurostarSleeperClient->getRoutePath($journeyId);
+                }
+            }
+
             if (!$rawPath) return null;
             $this->redis->set($cacheKey, json_encode($rawPath), ['ex' => CacheTtl::LONG->value]);
         }
 
-        return Path::fromArray($rawPath);
+        return Path::fromArray($journeyId, $rawPath);
+    }
+
+    private function isEurostarOrSleeper(string $journeyId): bool
+    {
+        return str_contains($journeyId, 'Eurostar') || str_contains($journeyId, 'Sleeper');
     }
 }

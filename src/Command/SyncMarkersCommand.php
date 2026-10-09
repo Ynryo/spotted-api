@@ -2,24 +2,29 @@
 
 namespace App\Command;
 
+use App\Contract\TransportProviderInterface;
 use App\Enum\CacheTtl;
-use App\Service\BusTrackerClient;
 use Redis;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 #[AsCommand(
     name: 'app:sync-markers',
-    description: 'Récupère les positions Bus-Tracker et les stocke dans Redis'
+    description: 'Récupère les positions des transports (Bus-Tracker, Eurostar, European Sleeper...) et les stocke dans Redis'
 )]
 class SyncMarkersCommand extends Command
 {
+    /**
+     * @param iterable<TransportProviderInterface> $providers
+     */
     public function __construct(
-        private readonly BusTrackerClient $client,
-        private readonly Redis           $redis
+        #[AutowireIterator('app.transport_provider')]
+        private readonly iterable $providers,
+        private readonly Redis    $redis
     )
     {
         parent::__construct();
@@ -36,18 +41,35 @@ class SyncMarkersCommand extends Command
 
         do {
             try {
-                $output->writeln('[' . date('H:i:s') . '] Téléchargement du flux Bus-Tracker...');
+                $allItems = [];
 
-                $rawJson = $this->client->getLiveMarkers();
+                foreach ($this->providers as $provider) {
+                    try {
+                        $output->writeln('[' . date('H:i:s') . "] Téléchargement du flux {$provider->getName()}...");
+                        $rawJson = $provider->getLiveMarkers();
+                        $decoded = json_decode($rawJson, true);
 
-                $this->redis->set('markers', $rawJson, ['ex' => CacheTtl::REALTIME->value]);
+                        $items = $decoded['items'] ?? $decoded['markers'] ?? (is_array($decoded) ? $decoded : []);
+                        $count = count($items);
+                        $output->writeln("  -> <comment>{$count}</comment> positions reçues pour {$provider->getName()}");
 
-                $decoded = json_decode($rawJson, true);
-                $count = count($decoded['items'] ?? $decoded['markers'] ?? []);
+                        $allItems = array_merge($allItems, $items);
+                    } catch (\Throwable $e) {
+                        $output->writeln("<error>Erreur lors de la récupération de {$provider->getName()} : {$e->getMessage()}</error>");
+                    }
+                }
 
-                $output->writeln("<info>$count positions mises à jour dans Redis !</info>");
+                $rawFlux = [
+                    'items' => $allItems,
+                    'at' => date('c'),
+                ];
+
+                $this->redis->set('markers', json_encode($rawFlux), ['ex' => CacheTtl::REALTIME->value]);
+
+                $totalCount = count($allItems);
+                $output->writeln("<info>[OK] $totalCount positions au total mises à jour dans Redis !</info>");
             } catch (\Throwable $e) {
-                $output->writeln('<error>Erreur de synchronisation : ' . $e->getMessage() . '</error>');
+                $output->writeln('<error>Erreur globale de synchronisation : ' . $e->getMessage() . '</error>');
             }
 
             if ($watch) {
