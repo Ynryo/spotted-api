@@ -18,6 +18,9 @@ if (!class_exists(Redis::class)) {
             return true;
         }
 
+        /**
+         * @param array<string, mixed> $options
+         */
         public function set(string $key, string $value, array $options = []): bool
         {
             return true;
