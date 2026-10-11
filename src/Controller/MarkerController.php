@@ -14,9 +14,9 @@ class MarkerController extends AbstractController
 {
     #[Route('/markers', name: 'app_markers', methods: ['GET'])]
     #[OA\Tag(name: 'Markers')]
-    #[OA\Get(summary: 'Récupère les véhicules en direct dans une zone géographique (bounding box)')]
+    #[OA\Get(summary: 'Récupère les véhicules en direct dans une zone géographique (bounding box facultative)')]
     #[OA\Response(response: 200, description: 'Positions des véhicules trouvées dans la zone (ou tableau vide si aucun véhicule)')]
-    public function getMarkers(#[MapQueryString] MarkerQueryDto $query, Redis $redis): JsonResponse
+    public function getMarkers(Redis $redis, #[MapQueryString] ?MarkerQueryDto $query = null): JsonResponse
     {
         $raw = $redis->get("markers");
 
@@ -31,6 +31,14 @@ class MarkerController extends AbstractController
         $content = json_decode($raw, true);
         $markers = $content['items'] ?? $content['markers'] ?? (is_array($content) ? $content : []);
 
+        if ($query === null || !$query->hasCoordinates()) {
+            return new JsonResponse([
+                'count' => count($markers),
+                'data' => array_values($markers),
+                'datetime' => date('Y-m-d H:i:s'),
+            ]);
+        }
+
         $filtered = array_filter($markers, function ($marker) use ($query) {
             $lat = $marker['position']['latitude'] ?? $marker['lat'] ?? null;
             $lon = $marker['position']['longitude'] ?? $marker['lon'] ?? null;
@@ -39,10 +47,20 @@ class MarkerController extends AbstractController
                 return false;
             }
 
-            return $lat >= $query->swLat
-                && $lat <= $query->neLat
-                && $lon >= $query->swLon
-                && $lon <= $query->neLon;
+            if ($query->swLat !== null && $lat < $query->swLat) {
+                return false;
+            }
+            if ($query->neLat !== null && $lat > $query->neLat) {
+                return false;
+            }
+            if ($query->swLon !== null && $lon < $query->swLon) {
+                return false;
+            }
+            if ($query->neLon !== null && $lon > $query->neLon) {
+                return false;
+            }
+
+            return true;
         });
 
         return new JsonResponse([

@@ -21,6 +21,28 @@ class MarkerQueryDtoTest extends AbstractKernelTestCase
 
         $violations = $this->validator->validate($dto);
         $this->assertCount(0, $violations);
+        $this->assertTrue($dto->hasCoordinates());
+    }
+
+    public function testNullCoordinatesHaveNoViolations(): void
+    {
+        $dto = new MarkerQueryDto();
+
+        $violations = $this->validator->validate($dto);
+        $this->assertCount(0, $violations);
+        $this->assertFalse($dto->hasCoordinates());
+    }
+
+    public function testPartialCoordinatesAreValid(): void
+    {
+        $dto = new MarkerQueryDto(
+            swLat: 45.4397,
+            neLat: 45.4500
+        );
+
+        $violations = $this->validator->validate($dto);
+        $this->assertCount(0, $violations);
+        $this->assertTrue($dto->hasCoordinates());
     }
 
     public function testBoundariesMinMaxAreValid(): void

@@ -7,20 +7,24 @@ use Symfony\Component\Validator\Constraints as Assert;
 readonly class MarkerQueryDto
 {
     public function __construct(
-        #[Assert\NotBlank(message: 'La latitude Sud-Ouest (swLat) est obligatoire.')]
         #[Assert\Range(min: -90, max: 90)]
-        public float $swLat,
+        public ?float $swLat = null,
 
-        #[Assert\NotBlank(message: 'La longitude Sud-Ouest (swLon) est obligatoire.')]
         #[Assert\Range(min: -180, max: 180)]
-        public float $swLon,
+        public ?float $swLon = null,
 
-        #[Assert\NotBlank(message: 'La latitude Nord-Est (neLat) est obligatoire.')]
         #[Assert\Range(min: -90, max: 90)]
-        public float $neLat,
+        public ?float $neLat = null,
 
-        #[Assert\NotBlank(message: 'La longitude Nord-Est (neLon) est obligatoire.')]
         #[Assert\Range(min: -180, max: 180)]
-        public float $neLon,
+        public ?float $neLon = null,
     ) {}
+
+    public function hasCoordinates(): bool
+    {
+        return $this->swLat !== null
+            || $this->swLon !== null
+            || $this->neLat !== null
+            || $this->neLon !== null;
+    }
 }
