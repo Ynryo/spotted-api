@@ -47,6 +47,26 @@ readonly class JourneyDetails
         return $this->vehicle?->number !== null ? (string)$this->vehicle->number : null;
     }
 
+    public function getLineNumber(): ?string
+    {
+        return $this->line?->lineNumber;
+    }
+
+    public function getLineId(): ?int
+    {
+        return $this->line?->id;
+    }
+
+    public function isWheelchairAccessible(): bool
+    {
+        return $this->wheelchairAccessibility === JourneyWheelchairAccessibility::ACCESSIBLE;
+    }
+
+    public function isBikeAccessible(): bool
+    {
+        return $this->bikeAccessibility === JourneyBikeAccessibility::ACCESSIBLE;
+    }
+
     /**
      * @param array<string, mixed> $journey
      * @param JourneyStopDetails[] $stops
