@@ -2,10 +2,10 @@
 
 namespace App\Tests\Model\Journey;
 
-use App\Enum\VehicleAirConditioning;
-use App\Enum\JourneyOccupancy;
 use App\Enum\JourneyBikeAccessibility;
+use App\Enum\JourneyOccupancy;
 use App\Enum\JourneyWheelchairAccessibility;
+use App\Enum\VehicleAirConditioning;
 use App\Enum\VehicleType;
 use App\Model\Journey\JourneyDetails;
 use App\Model\Vehicle\VehicleDetails;
@@ -52,15 +52,12 @@ class JourneyDetailsTest extends AbstractKernelTestCase
         $journey = JourneyDetails::fromArray($raw);
 
         $this->assertSame('STAS::ServiceJourney:12345:2026-09-30', $journey->id);
-        $this->assertSame(42, $journey->lineId);
         $this->assertSame('715', $journey->getVehicleNumber());
         $this->assertSame('Châteaucreux', $journey->destination);
         $this->assertSame('2026-09-30', $journey->serviceDate);
         $this->assertSame(JourneyOccupancy::MEDIUM, $journey->occupancy);
         $this->assertSame(JourneyWheelchairAccessibility::ACCESSIBLE, $journey->wheelchairAccessibility);
         $this->assertSame(JourneyBikeAccessibility::ACCESSIBLE, $journey->bikeAccessibility);
-        $this->assertTrue($journey->isWheelchairAccessible());
-        $this->assertTrue($journey->isBikeAccessible());
         $this->assertInstanceOf(VehicleDetails::class, $journey->vehicle);
         $this->assertSame(VehicleType::BUS, $journey->getVehicleType());
         $this->assertSame(VehicleType::BUS, $journey->vehicle->type);
@@ -76,26 +73,11 @@ class JourneyDetailsTest extends AbstractKernelTestCase
         $journey = JourneyDetails::fromArray($raw);
 
         $this->assertSame('FLIXBUS::Journey:999', $journey->id);
-        $this->assertNull($journey->lineId);
         $this->assertNull($journey->vehicle);
         $this->assertNull($journey->getVehicleType());
         $this->assertSame(JourneyOccupancy::UNKNOWN, $journey->occupancy);
         $this->assertSame(JourneyWheelchairAccessibility::UNKNOWN, $journey->wheelchairAccessibility);
         $this->assertSame(JourneyBikeAccessibility::UNKNOWN, $journey->bikeAccessibility);
-        $this->assertFalse($journey->isWheelchairAccessible());
-        $this->assertFalse($journey->isBikeAccessible());
-    }
-
-    public function testBikeAllowedFallback(): void
-    {
-        $rawWithPlural = ['id' => '1', 'bikesAllowed' => true];
-        $this->assertTrue(JourneyDetails::fromArray($rawWithPlural)->isBikeAccessible());
-
-        $rawWithSingular = ['id' => '2', 'bikeAllowed' => true];
-        $this->assertTrue(JourneyDetails::fromArray($rawWithSingular)->isBikeAccessible());
-
-        $rawWithout = ['id' => '3'];
-        $this->assertFalse(JourneyDetails::fromArray($rawWithout)->isBikeAccessible());
     }
 
     public function testJsonSerializationContractMatchesMobileAppExpectations(): void

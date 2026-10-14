@@ -148,23 +148,20 @@ class EurostarSleeperClient implements TransportProviderInterface
     }
 
     /**
-     * @return array<int, array<string, mixed>>|null
+     * @param int $networkId
+     * @return array<string, mixed>|null
      */
     public function getNetworkLines(int $networkId): ?array
     {
-        try {
-            $response = $this->httpClient->request('GET', self::BASE_URL . "networks/{$networkId}?withDetails=true", [
-                'headers' => [
-                    'Accept' => 'application/json',
-                ],
-                'timeout' => 10,
-            ]);
+        return null;
+    }
 
-            if ($response->getStatusCode() !== 200) return null;
-
-            return $response->toArray();
-        } catch (Throwable) {
-            return null;
-        }
+    /**
+     * @param int $lineId
+     * @return array<string, mixed>|null
+     */
+    public function getLine(int $lineId): ?array
+    {
+        return null;
     }
 }
