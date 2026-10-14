@@ -11,7 +11,6 @@ readonly class Line
      * @param int $networkId
      * @param string $color
      * @param string $textColor
-     * @param int $sortOrder
      */
     public function __construct(
         public int    $id,
