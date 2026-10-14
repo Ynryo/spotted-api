@@ -2,6 +2,7 @@
 
 namespace App\Tests\Model\Journey;
 
+use App\Enum\StopFlags;
 use App\Enum\StopStatus;
 use App\Enum\StopType;
 use App\Enum\VehicleType;
@@ -45,7 +46,7 @@ class JourneyStopDetailsTest extends TestCase
             'longitude' => 4.4001,
             'platformName' => 'Quai 1',
             'callStatus' => 'SKIPPED',
-            'flags' => ['EXTRA'],
+            'flags' => ['NO_DROPOFF', 'NO_PICKUP'],
         ];
 
         $stop = JourneyStopDetails::fromArray($rawStop, null, 0, 5, VehicleType::BUS);
@@ -64,7 +65,7 @@ class JourneyStopDetailsTest extends TestCase
         $this->assertSame(4.4001, $stop->longitude);
         $this->assertNotNull($stop->platform);
         $this->assertSame('Quai 1', $stop->platform->name);
-        $this->assertSame(['EXTRA'], $stop->flags);
+        $this->assertSame([StopFlags::NO_DROP_OFF, StopFlags::NO_PICKUP], $stop->flags);
     }
 
     public function testTrainOrderIncrement(): void

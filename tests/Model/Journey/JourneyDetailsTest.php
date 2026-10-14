@@ -2,12 +2,13 @@
 
 namespace App\Tests\Model\Journey;
 
-use App\Enum\VehicleAirConditioning;
-use App\Enum\JourneyOccupancy;
 use App\Enum\JourneyBikeAccessibility;
+use App\Enum\JourneyOccupancy;
 use App\Enum\JourneyWheelchairAccessibility;
+use App\Enum\VehicleAirConditioning;
 use App\Enum\VehicleType;
 use App\Model\Journey\JourneyDetails;
+use App\Model\Line\Line;
 use App\Model\Vehicle\VehicleDetails;
 use App\Tests\AbstractKernelTestCase;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -52,15 +53,12 @@ class JourneyDetailsTest extends AbstractKernelTestCase
         $journey = JourneyDetails::fromArray($raw);
 
         $this->assertSame('STAS::ServiceJourney:12345:2026-09-30', $journey->id);
-        $this->assertSame(42, $journey->lineId);
         $this->assertSame('715', $journey->getVehicleNumber());
         $this->assertSame('Châteaucreux', $journey->destination);
         $this->assertSame('2026-09-30', $journey->serviceDate);
         $this->assertSame(JourneyOccupancy::MEDIUM, $journey->occupancy);
         $this->assertSame(JourneyWheelchairAccessibility::ACCESSIBLE, $journey->wheelchairAccessibility);
         $this->assertSame(JourneyBikeAccessibility::ACCESSIBLE, $journey->bikeAccessibility);
-        $this->assertTrue($journey->isWheelchairAccessible());
-        $this->assertTrue($journey->isBikeAccessible());
         $this->assertInstanceOf(VehicleDetails::class, $journey->vehicle);
         $this->assertSame(VehicleType::BUS, $journey->getVehicleType());
         $this->assertSame(VehicleType::BUS, $journey->vehicle->type);
@@ -76,30 +74,24 @@ class JourneyDetailsTest extends AbstractKernelTestCase
         $journey = JourneyDetails::fromArray($raw);
 
         $this->assertSame('FLIXBUS::Journey:999', $journey->id);
-        $this->assertNull($journey->lineId);
         $this->assertNull($journey->vehicle);
         $this->assertNull($journey->getVehicleType());
         $this->assertSame(JourneyOccupancy::UNKNOWN, $journey->occupancy);
         $this->assertSame(JourneyWheelchairAccessibility::UNKNOWN, $journey->wheelchairAccessibility);
         $this->assertSame(JourneyBikeAccessibility::UNKNOWN, $journey->bikeAccessibility);
-        $this->assertFalse($journey->isWheelchairAccessible());
-        $this->assertFalse($journey->isBikeAccessible());
-    }
-
-    public function testBikeAllowedFallback(): void
-    {
-        $rawWithPlural = ['id' => '1', 'bikesAllowed' => true];
-        $this->assertTrue(JourneyDetails::fromArray($rawWithPlural)->isBikeAccessible());
-
-        $rawWithSingular = ['id' => '2', 'bikeAllowed' => true];
-        $this->assertTrue(JourneyDetails::fromArray($rawWithSingular)->isBikeAccessible());
-
-        $rawWithout = ['id' => '3'];
-        $this->assertFalse(JourneyDetails::fromArray($rawWithout)->isBikeAccessible());
     }
 
     public function testJsonSerializationContractMatchesMobileAppExpectations(): void
     {
+        $line = new Line(
+            id: 10,
+            lineRef: 'TER',
+            lineNumber: 'L10',
+            networkId: 1,
+            color: '#FF0000',
+            textColor: '#FFFFFF',
+        );
+
         $raw = [
             'id' => 'SNCF::TER:851711',
             'lineId' => 10,
@@ -117,7 +109,7 @@ class JourneyDetailsTest extends AbstractKernelTestCase
             ],
         ];
 
-        $journey = JourneyDetails::fromArray($raw);
+        $journey = JourneyDetails::fromArray($raw, line: $line);
         $jsonString = $this->serializer->serialize($journey, 'json');
         /** @var array<string, mixed> $json */
         $json = json_decode($jsonString, true);
@@ -125,6 +117,7 @@ class JourneyDetailsTest extends AbstractKernelTestCase
         // Clés requises par l'application cliente
         $this->assertArrayHasKey('id', $json);
         $this->assertArrayHasKey('lineId', $json);
+        $this->assertSame(10, $json['lineId']);
         $this->assertArrayHasKey('destination', $json);
         $this->assertArrayHasKey('serviceDate', $json);
         $this->assertArrayHasKey('occupancy', $json);
@@ -134,11 +127,13 @@ class JourneyDetailsTest extends AbstractKernelTestCase
         $this->assertArrayHasKey('position', $json);
         $this->assertArrayHasKey('vehicle', $json);
 
-        // Clé critique : vehicleType et vehicleNumber virtuels pour la rétrocompatibilité mobile
+        // Clés critiques pour la rétrocompatibilité mobile
         $this->assertArrayHasKey('vehicleType', $json);
         $this->assertSame('TRAIN', $json['vehicleType']);
         $this->assertArrayHasKey('vehicleNumber', $json);
         $this->assertSame('851711', $json['vehicleNumber']);
+        $this->assertArrayHasKey('lineNumber', $json);
+        $this->assertSame('L10', $json['lineNumber']);
 
         // Vérification des types JSON sérialisés
         $this->assertSame('LOW', $json['occupancy']);

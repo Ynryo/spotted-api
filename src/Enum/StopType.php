@@ -5,9 +5,9 @@ namespace App\Enum;
 enum StopType: string
 {
     case START = "START";
-    CASE INTERMEDIATE = "INTERMEDIATE";
+    case INTERMEDIATE = "INTERMEDIATE";
     case SPLIT = "SPLIT";
-    CASE END = "END";
+    case END = "END";
 
     public static function fromData(int $index, ?float $distanceTraveled, int $stopsCount): self
     {

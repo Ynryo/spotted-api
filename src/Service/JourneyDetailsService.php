@@ -6,7 +6,6 @@ use App\Enum\CacheTtl;
 use App\Enum\VehicleType;
 use App\Model\Journey\JourneyDetails;
 use App\Model\Journey\JourneyStopDetails;
-use App\Model\Network\Network;
 use App\Model\Vehicle\VehicleDetails;
 use Redis;
 
@@ -16,6 +15,7 @@ readonly class JourneyDetailsService
         private BusTrackerClient      $client,
         private EurostarSleeperClient $eurostarSleeperClient,
         private Redis                 $redis,
+        private LineService           $lineService,
         private PathService           $pathService,
         private NetworkService        $networkService,
         private PlatformService       $platformService,
@@ -42,6 +42,9 @@ readonly class JourneyDetailsService
             if (!$rawJourney) return null;
             $this->redis->set($journeyId, json_encode($rawJourney), ['ex' => CacheTtl::REALTIME->value]);
         }
+
+        //Line - on a pas la line donc on get
+        $line = $this->lineService->getLine($rawJourney['lineId'] ?? null);
 
         // Path - on a pas les data donc on get
         $path = $this->pathService->getPath($journeyId);
@@ -87,6 +90,7 @@ readonly class JourneyDetailsService
 
         return JourneyDetails::fromArray(
             $rawJourney,
+            $line,
             $path,
             $network ?? null,
             $vehicle ?? null,
