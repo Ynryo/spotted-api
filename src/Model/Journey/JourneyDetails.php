@@ -6,6 +6,7 @@ use App\Enum\JourneyBikeAccessibility;
 use App\Enum\JourneyOccupancy;
 use App\Enum\JourneyWheelchairAccessibility;
 use App\Enum\VehicleType;
+use App\Model\Line\Line;
 use App\Model\Network\Network;
 use App\Model\Path\Path;
 use App\Model\Vehicle\VehicleDetails;
@@ -17,7 +18,7 @@ readonly class JourneyDetails
      */
     public function __construct(
         public string                         $id,
-        public ?int                           $lineId = null,
+        public ?Line                          $line = null,
         public ?string                        $destination = null,
         public ?string                        $serviceDate = null,
         public JourneyOccupancy               $occupancy = JourneyOccupancy::UNKNOWN,
@@ -46,22 +47,13 @@ readonly class JourneyDetails
         return $this->vehicle?->number !== null ? (string)$this->vehicle->number : null;
     }
 
-    public function isWheelchairAccessible(): bool
-    {
-        return $this->wheelchairAccessibility === JourneyWheelchairAccessibility::ACCESSIBLE;
-    }
-
-    public function isBikeAccessible(): bool
-    {
-        return $this->bikeAccessibility === JourneyBikeAccessibility::ACCESSIBLE;
-    }
-
     /**
      * @param array<string, mixed> $journey
      * @param JourneyStopDetails[] $stops
      */
     public static function fromArray(
         array           $journey,
+        ?Line           $line = null,
         ?Path           $path = null,
         ?Network        $network = null,
         ?VehicleDetails $vehicle = null,
@@ -94,7 +86,7 @@ readonly class JourneyDetails
 
         return new self(
             id: (string)$journey['id'],
-            lineId: isset($journey['lineId']) ? (int)$journey['lineId'] : null,
+            line: $line,
             destination: $journey['destination'] ?? null,
             serviceDate: $journey['serviceDate'] ?? null,
             occupancy: JourneyOccupancy::fromString($journey['occupancy'] ?? null),

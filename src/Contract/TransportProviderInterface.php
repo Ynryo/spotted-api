@@ -49,6 +49,11 @@ interface TransportProviderInterface
     public function getNetworks(): ?array;
 
     /**
+     * @return array<string, mixed>|null
+     */
+    public function getLine(int $lineId): ?array;
+
+    /**
      * @return array<int, array<string, mixed>>|null
      */
     public function getNetworkLines(int $networkId): ?array;
