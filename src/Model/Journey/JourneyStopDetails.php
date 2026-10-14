@@ -2,6 +2,7 @@
 
 namespace App\Model\Journey;
 
+use App\Enum\StopFlags;
 use App\Enum\StopStatus;
 use App\Enum\StopType;
 use App\Enum\VehicleType;
@@ -9,7 +10,7 @@ use App\Enum\VehicleType;
 readonly class JourneyStopDetails
 {
     /**
-     * @param string[] $flags
+     * @param StopFlags[] $flags
      */
     public function __construct(
         public ?string              $stopName,
@@ -64,7 +65,7 @@ readonly class JourneyStopDetails
             ? JourneyStopPlatform::fromArray($stop) //bt
             : $guessedPlatform; //ct
 
-        $rawOrder = $stop['order'] ?? $stop['stopOrder'] ?? $stop['stopPointOrder'] ?? null;
+        $rawOrder = $stop['stopOrder'] ?? null;
         if ($rawOrder !== null) {
             $stopOrder = ($vehicleType === VehicleType::TRAIN) ? ((int)$rawOrder + 1) : (int)$rawOrder;
         } else {
@@ -91,7 +92,7 @@ readonly class JourneyStopDetails
             latitude: isset($stop['latitude']) ? (float)$stop['latitude'] : null,
             longitude: isset($stop['longitude']) ? (float)$stop['longitude'] : null,
             platform: $platform,
-            flags: $stop['flags'] ?? [],
+            flags: StopFlags::fromArray($stop['flags'] ?? []),
         );
     }
 
