@@ -31,42 +31,57 @@ class MarkerController extends AbstractController
         $content = json_decode($raw, true);
         $markers = $content['items'] ?? $content['markers'] ?? (is_array($content) ? $content : []);
 
-        if ($query === null || !$query->hasCoordinates()) {
-            return new JsonResponse([
-                'count' => count($markers),
-                'data' => array_values($markers),
-                'datetime' => date('Y-m-d H:i:s'),
-            ]);
+        if ($query !== null && $query->hasCoordinates()) {
+            $markers = array_filter($markers, function ($marker) use ($query) {
+                $lat = $marker['position']['latitude'] ?? $marker['lat'] ?? null;
+                $lon = $marker['position']['longitude'] ?? $marker['lon'] ?? null;
+
+                if ($lat === null || $lon === null) {
+                    return false;
+                }
+
+                if ($query->swLat !== null && $lat < $query->swLat) {
+                    return false;
+                }
+                if ($query->neLat !== null && $lat > $query->neLat) {
+                    return false;
+                }
+                if ($query->swLon !== null && $lon < $query->swLon) {
+                    return false;
+                }
+                if ($query->neLon !== null && $lon > $query->neLon) {
+                    return false;
+                }
+
+                return true;
+            });
         }
 
-        $filtered = array_filter($markers, function ($marker) use ($query) {
-            $lat = $marker['position']['latitude'] ?? $marker['lat'] ?? null;
-            $lon = $marker['position']['longitude'] ?? $marker['lon'] ?? null;
+        $formatted = array_map(function ($marker) {
+            if (is_array($marker)) {
+                $id = (string)($marker['id'] ?? '');
 
-            if ($lat === null || $lon === null) {
-                return false;
-            }
+                if ($this->isTrain($id) && !empty($marker['vehicleNumber'])) {
+                    $marker['lineNumber'] = (string)$marker['vehicleNumber'];
+                }
 
-            if ($query->swLat !== null && $lat < $query->swLat) {
-                return false;
-            }
-            if ($query->neLat !== null && $lat > $query->neLat) {
-                return false;
-            }
-            if ($query->swLon !== null && $lon < $query->swLon) {
-                return false;
-            }
-            if ($query->neLon !== null && $lon > $query->neLon) {
-                return false;
+                unset($marker['vehicleNumber']);
             }
 
-            return true;
-        });
+            return $marker;
+        }, array_values($markers));
 
         return new JsonResponse([
-            'count' => count($filtered),
-            'data' => array_values($filtered),
+            'count' => count($formatted),
+            'data' => $formatted,
             'datetime' => date('Y-m-d H:i:s'),
         ]);
+    }
+
+    private function isTrain(string $id): bool
+    {
+        return str_starts_with($id, 'SNCF')
+            || str_contains($id, 'Eurostar')
+            || str_contains($id, 'Sleeper');
     }
 }
