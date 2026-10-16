@@ -43,47 +43,40 @@ readonly class JourneyDetailsService
             $this->redis->set($journeyId, json_encode($rawJourney), ['ex' => CacheTtl::REALTIME->value]);
         }
 
-        //Line - on a pas la line donc on get
-        $line = $this->lineService->getLine($rawJourney['lineId'] ?? null);
+        // Vehicle - on tente via le service, sinon fallback sur les données brutes
+        $vehicleId = isset($rawJourney['vehicle']['id']) ? (int)$rawJourney['vehicle']['id'] : null;
+        $vehicle = $vehicleId ? $this->vehicleService->getVehicle($vehicleId) : null;
+
+        $rawVehicle = $rawJourney['vehicle'] ?? null;
+        if ($vehicle === null && is_array($rawVehicle)) {
+            if (!isset($rawVehicle['id']) && isset($rawVehicle['number'])) {
+                $vehicle = new VehicleDetails(null, (string)$rawVehicle['number'], null, null, VehicleType::TRAIN);
+            } else {
+                $vehicle = VehicleDetails::fromArray($rawVehicle);
+            }
+        }
+
+        // Line - on passe le véhicule pour adapter le lineNumber pour les trains
+        $lineId = isset($rawJourney['lineId']) ? (int)$rawJourney['lineId'] : null;
+        $line = $lineId ? $this->lineService->getLine($lineId, $vehicle) : null;
 
         // Path - on a pas les data donc on get
         $path = $this->pathService->getPath($journeyId);
 
         // Network - on a pas les data donc on get
-        $network = null;
         $networkId = $rawJourney['networkId'] ?? null;
-        if ($networkId) {
-            $network = $this->networkService->getNetwork((int)$networkId);
-        }
-
-        // vehicle type et number
-        $vehicleType = self::getVehicleType($rawJourney['id'] ?? $journeyId);
-        $vehicleNumber = (string)($rawJourney['vehicle']['number'] ?? null);
-
-        // Vehicle - on a pas toutes les data donc on get aussi
-        $vehicle = null;
-        $vehicleId = $rawJourney['vehicle']['id'] ?? null;
-        if ($vehicleId) {
-            $vehicle = $this->vehicleService->getVehicle($vehicleId);
-        }
-
-        if ($vehicle === null && !empty($rawJourney['vehicle']) && is_array($rawJourney['vehicle'])) {
-            $rawVehicle = $rawJourney['vehicle'];
-            if (empty($rawVehicle['type']) || $rawVehicle['type'] === VehicleType::UNKNOWN->value) {
-                $rawVehicle['type'] = $vehicleType->value;
-            }
-            $vehicle = VehicleDetails::fromArray($rawVehicle);
-        }
+        $network = $this->networkService->getNetwork((int)$networkId);
 
         // Transformation POO des arrêts (calls)
         $stops = [];
         $stopsCount = count($rawJourney['calls'] ?? []);
+        $vehicleType = $vehicle !== null ? $vehicle->type : VehicleType::UNKNOWN;
 
         foreach ($rawJourney['calls'] ?? [] as $index => $call) {
             $guessedPlatform = null;
-            if ($vehicleType == VehicleType::TRAIN && $vehicleNumber) {
+            if ($vehicleType === VehicleType::TRAIN && $vehicle?->number !== null) {
                 $stopUIC = self::getStopUIC($call);
-                if ($stopUIC) $guessedPlatform = $this->platformService->guessPlatform($stopUIC, $vehicleNumber);
+                if ($stopUIC) $guessedPlatform = $this->platformService->guessPlatform($stopUIC, $vehicle->number);
             }
             $stops[] = JourneyStopDetails::fromArray($call, $guessedPlatform, $index, $stopsCount, $vehicleType);
         }
@@ -96,17 +89,6 @@ readonly class JourneyDetailsService
             $vehicle ?? null,
             $stops
         );
-    }
-
-    /**
-     * @param string $id
-     * @return VehicleType
-     */
-    private static function getVehicleType(string $id): VehicleType
-    {
-        return (str_starts_with($id, "SNCF") || str_contains($id, "Eurostar") || str_contains($id, "Sleeper"))
-            ? VehicleType::TRAIN
-            : VehicleType::BUS;
     }
 
     private function isEurostarOrSleeper(string $journeyId): bool
