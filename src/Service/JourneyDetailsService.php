@@ -44,15 +44,14 @@ readonly class JourneyDetailsService
         }
 
         // Vehicle - on tente via le service, sinon fallback sur les données brutes
-        $vehicleId = isset($rawJourney['vehicle']['id']) ? (int)$rawJourney['vehicle']['id'] : null;
-        $vehicle = $vehicleId ? $this->vehicleService->getVehicle($vehicleId) : null;
-
-        $rawVehicle = $rawJourney['vehicle'] ?? null;
-        if ($vehicle === null && is_array($rawVehicle)) {
-            if (!isset($rawVehicle['id']) && isset($rawVehicle['number'])) {
+        $vehicle = null;
+        if (isset($rawJourney['vehicle'])) {
+            $rawVehicle = $rawJourney['vehicle'];
+            $vehicleNumber = $rawVehicle['number'] ?? null;
+            if (isset($rawVehicle['id'])) {
+                $vehicle = $this->vehicleService->getVehicle((int)$rawVehicle['id']) ?? VehicleDetails::fromArray($rawVehicle);
+            } else if ($vehicleNumber !== null) {
                 $vehicle = new VehicleDetails(null, (string)$rawVehicle['number'], null, null, VehicleType::TRAIN);
-            } else {
-                $vehicle = VehicleDetails::fromArray($rawVehicle);
             }
         }
 
