@@ -121,8 +121,6 @@ class JourneyDetailsTest extends AbstractKernelTestCase
         $this->assertArrayHasKey('destination', $json);
         $this->assertArrayHasKey('serviceDate', $json);
         $this->assertArrayHasKey('occupancy', $json);
-        $this->assertArrayHasKey('wheelchairAccessible', $json);
-        $this->assertArrayHasKey('bikeAccessible', $json);
         $this->assertArrayHasKey('stops', $json);
         $this->assertArrayHasKey('position', $json);
         $this->assertArrayHasKey('vehicle', $json);
@@ -137,8 +135,6 @@ class JourneyDetailsTest extends AbstractKernelTestCase
 
         // Vérification des types JSON sérialisés
         $this->assertSame('LOW', $json['occupancy']);
-        $this->assertTrue($json['wheelchairAccessible']);
-        $this->assertTrue($json['bikeAccessible']);
         $this->assertIsArray($json['vehicle']);
         $this->assertSame('851711', $json['vehicle']['number']);
         $this->assertSame('TRAIN', $json['vehicle']['type']);

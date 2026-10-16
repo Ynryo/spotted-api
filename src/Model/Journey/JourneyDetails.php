@@ -57,16 +57,6 @@ readonly class JourneyDetails
         return $this->line?->id;
     }
 
-    public function isWheelchairAccessible(): bool
-    {
-        return $this->wheelchairAccessibility === JourneyWheelchairAccessibility::ACCESSIBLE;
-    }
-
-    public function isBikeAccessible(): bool
-    {
-        return $this->bikeAccessibility === JourneyBikeAccessibility::ACCESSIBLE;
-    }
-
     /**
      * @param array<string, mixed> $journey
      * @param JourneyStopDetails[] $stops
