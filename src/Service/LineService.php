@@ -4,7 +4,9 @@ namespace App\Service;
 
 use App\Contract\TransportProviderInterface;
 use App\Enum\CacheTtl;
+use App\Enum\VehicleType;
 use App\Model\Line\Line;
+use App\Model\Vehicle\VehicleDetails;
 use Redis;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
@@ -23,9 +25,10 @@ readonly class LineService
 
     /**
      * @param int $lineId
+     * @param VehicleDetails|null $vehicle
      * @return Line|null
      */
-    public function getLine(int $lineId): ?Line
+    public function getLine(int $lineId, ?VehicleDetails $vehicle = null): ?Line
     {
 
         $cacheName = "line_$lineId";
@@ -42,7 +45,7 @@ readonly class LineService
         }
 
         if (!empty($rawLine)) {
-            return Line::fromArray($rawLine) ?? null;
+            return Line::fromArray($rawLine, $vehicle) ?? null;
         }
 
         return null;
