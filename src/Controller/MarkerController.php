@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\DTO\MarkerQueryDto;
+use App\Model\Marker\Marker;
 use OpenApi\Attributes as OA;
 use Redis;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -29,59 +30,27 @@ class MarkerController extends AbstractController
         }
 
         $content = json_decode($raw, true);
-        $markers = $content['items'] ?? $content['markers'] ?? (is_array($content) ? $content : []);
+        $rawMarkers = $content['items'] ?? $content['markers'] ?? (is_array($content) ? $content : []);
 
-        if ($query !== null && $query->hasCoordinates()) {
-            $markers = array_filter($markers, function ($marker) use ($query) {
-                $lat = $marker['position']['latitude'] ?? $marker['lat'] ?? null;
-                $lon = $marker['position']['longitude'] ?? $marker['lon'] ?? null;
-
-                if ($lat === null || $lon === null) {
-                    return false;
+        /** @var Marker[] $markers */
+        $markers = [];
+        foreach ($rawMarkers as $rawMarker) {
+            if (is_array($rawMarker)) {
+                $marker = Marker::fromArray($rawMarker);
+                if ($marker !== null) {
+                    $markers[] = $marker;
                 }
-
-                if ($query->swLat !== null && $lat < $query->swLat) {
-                    return false;
-                }
-                if ($query->neLat !== null && $lat > $query->neLat) {
-                    return false;
-                }
-                if ($query->swLon !== null && $lon < $query->swLon) {
-                    return false;
-                }
-                if ($query->neLon !== null && $lon > $query->neLon) {
-                    return false;
-                }
-
-                return true;
-            });
+            }
         }
 
-        $formatted = array_map(function ($marker) {
-            if (is_array($marker)) {
-                $id = (string)($marker['id'] ?? '');
-
-                if ($this->isTrain($id) && !empty($marker['vehicleNumber'])) {
-                    $marker['lineNumber'] = (string)$marker['vehicleNumber'];
-                }
-
-                unset($marker['vehicleNumber']);
-            }
-
-            return $marker;
-        }, array_values($markers));
+        if ($query !== null && $query->hasCoordinates()) {
+            $markers = array_filter($markers, fn(Marker $marker) => $marker->isInBounds($query));
+        }
 
         return new JsonResponse([
-            'count' => count($formatted),
-            'data' => $formatted,
+            'count' => count($markers),
+            'data' => array_values($markers),
             'datetime' => date('Y-m-d H:i:s'),
         ]);
-    }
-
-    private function isTrain(string $id): bool
-    {
-        return str_starts_with($id, 'SNCF')
-            || str_contains($id, 'Eurostar')
-            || str_contains($id, 'Sleeper');
     }
 }

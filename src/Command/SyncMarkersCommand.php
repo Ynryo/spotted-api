@@ -4,6 +4,7 @@ namespace App\Command;
 
 use App\Contract\TransportProviderInterface;
 use App\Enum\CacheTtl;
+use App\Model\Marker\Marker;
 use Redis;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -41,7 +42,8 @@ class SyncMarkersCommand extends Command
 
         do {
             try {
-                $allItems = [];
+                /** @var Marker[] $allMarkers */
+                $allMarkers = [];
 
                 foreach ($this->providers as $provider) {
                     try {
@@ -50,23 +52,34 @@ class SyncMarkersCommand extends Command
                         $decoded = json_decode($rawJson, true);
 
                         $items = $decoded['items'] ?? $decoded['markers'] ?? (is_array($decoded) ? $decoded : []);
-                        $count = count($items);
+                        $providerMarkers = [];
+
+                        foreach ($items as $item) {
+                            if (is_array($item)) {
+                                $marker = Marker::fromArray($item);
+                                if ($marker !== null) {
+                                    $providerMarkers[] = $marker;
+                                }
+                            }
+                        }
+
+                        $count = count($providerMarkers);
                         $output->writeln("  -> <comment>{$count}</comment> positions reçues pour {$provider->getName()}");
 
-                        $allItems = array_merge($allItems, $items);
+                        $allMarkers = array_merge($allMarkers, $providerMarkers);
                     } catch (\Throwable $e) {
                         $output->writeln("<error>Erreur lors de la récupération de {$provider->getName()} : {$e->getMessage()}</error>");
                     }
                 }
 
                 $rawFlux = [
-                    'items' => $allItems,
+                    'items' => $allMarkers,
                     'at' => date('c'),
                 ];
 
                 $this->redis->set('markers', json_encode($rawFlux), ['ex' => CacheTtl::REALTIME->value]);
 
-                $totalCount = count($allItems);
+                $totalCount = count($allMarkers);
                 $output->writeln("<info>[OK] $totalCount positions au total mises à jour dans Redis !</info>");
             } catch (\Throwable $e) {
                 $output->writeln('<error>Erreur globale de synchronisation : ' . $e->getMessage() . '</error>');
