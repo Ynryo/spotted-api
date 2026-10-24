@@ -38,6 +38,7 @@ class Marker implements JsonSerializable
             new MarkerUnit(
                 id: $id,
                 lineNumber: $lineNumber,
+                position: MarkerPosition::fromArray($data['position']),
                 color: (string)$data['color'] ?? "#fff",
                 fillColor: (string)$data['fillColor'] ?? "#000",
             ),
@@ -45,7 +46,6 @@ class Marker implements JsonSerializable
 
         return new self(
             id: $id,
-//            position: MarkerPosition::fromArray($data['position']), //equals à la moyenne des units
             lineNumber: $lineNumber,
             units: $units,
         );
@@ -95,19 +95,32 @@ class Marker implements JsonSerializable
         return true;
     }
 
-//    public function getPosition(): MarkerPosition
-//    {
-//        if (isset($units) && is_array($units)) {
-//
-//        }
-//    }
+    public function getPosition(): ?MarkerPosition
+    {
+        if (isset($this->units) && is_array($this->units)) {
+            $totalLat = 0;
+            $totalLon = 0;
+            $count = 0;
+            foreach ($this->units as $unit) {
+                $totalLat += $unit->position->latitude;
+                $totalLon += $unit->position->longitude;
+                $count++;
+            }
+            if ($count == 0) return null;
+            $averageLat = $totalLat / $count;
+            $averageLon = $totalLon / $count;
+            $bearing = $this->units[0]->position->bearing;
+            return new MarkerPosition($averageLat, $averageLon, $bearing);
+        }
+        return null;
+    }
 
-    public function jsonSerialize(): mixed
+    public function jsonSerialize(): array
     {
         return [
             'id' => $this->id,
             'lineNumber' => $this->lineNumber,
-            'position' => ,
+            'position' => $this->getPosition(),
             'units' => $this->units,
         ];
     }

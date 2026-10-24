@@ -9,9 +9,9 @@ readonly class MarkerUnit implements JsonSerializable
     public function __construct(
         public string          $id,
         public ?string         $lineNumber = null,
+        public ?MarkerPosition $position = null,
         public ?string         $color = null,
         public ?string         $fillColor = null,
-        public ?MarkerPosition $position = null,
     )
     {
     }
@@ -21,20 +21,20 @@ readonly class MarkerUnit implements JsonSerializable
      */
     public static function fromArray(?array $data = null): ?self
     {
-        if (empty($data) || !isset($data['id'])) {
+        if (empty($data) || !isset($data['id'], $data['position'])) {
             return null;
         }
 
-        $position = isset($data['position']) && is_array($data['position'])
+        $position = is_array($data['position'])
             ? MarkerPosition::fromArray($data['position'])
             : null;
 
         return new self(
             id: (string)$data['id'],
-            lineNumber: isset($data['lineNumber']) && $data['lineNumber'] !== null ? (string)$data['lineNumber'] : null,
-            color: isset($data['color']) && $data['color'] !== null ? (string)$data['color'] : "#fff",
-            fillColor: isset($data['fillColor']) && $data['fillColor'] !== null ? (string)$data['fillColor'] : "#000",
+            lineNumber: (string)$data['lineNumber'] ?? null,
             position: $position,
+            color: (string)$data['color'] ?? "#fff",
+            fillColor: (string)$data['fillColor'] ?? "#000",
         );
     }
 
@@ -45,9 +45,9 @@ readonly class MarkerUnit implements JsonSerializable
         return new self(
             id: $marker->id,
             lineNumber: $marker->lineNumber,
+            position: $firstUnit?->position ?? $marker->getPosition(),
             color: $firstUnit?->color ?? "#fff",
             fillColor: $firstUnit?->fillColor ?? "#000",
-            position: $firstUnit?->position ?? $marker->getPosition(),
         );
     }
 
