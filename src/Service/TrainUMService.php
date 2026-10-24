@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Model\Marker\Marker;
+use App\Model\Marker\MarkerUnit;
 
 class TrainUMService
 {
@@ -10,32 +11,60 @@ class TrainUMService
 
     /**
      * @param Marker[] $markers
-     * @return array<Marker, Marker>
+     * @return Marker[]
      */
-    public function detectUM(array $markers): array
+    public static function processUM(array $markers): array
     {
-        $umPairs = [];
+        return self::detectUM($markers);
+    }
+
+    /**
+     * @param Marker[] $markers
+     * @return array<Marker>
+     */
+    public static function detectUM(array $markers): array
+    {
+        $finalMarkers = [];
         $count = count($markers);
+        $paired = [];
 
         for ($i = 0; $i < $count; $i++) {
+            if (isset($paired[$i])) {
+                continue;
+            }
+
             $a = $markers[$i];
-            if (!$a->isTrain() || $a->position->bearing == 0.0) continue;
+            if (!$a->isTrain() || $a->position === null || $a->position->bearing === null || $a->position->bearing == 0.0) {
+                $finalMarkers[] = $a;
+                continue;
+            }
 
+            $merged = false;
             for ($j = $i + 1; $j < $count; $j++) {
+                if (isset($paired[$j])) continue;
                 $b = $markers[$j];
-                if (!$b->isTrain() || $b->position->bearing == 0.0) continue;
+                if ($a === $b) continue;
+                if (!$b->isTrain() || $b->position === null || $b->position->bearing === null || $b->position->bearing == 0.0) continue;
 
-                if ($this->areNeighbors($a, $b)) {
-                    $umPairs[] = [$a, $b];
+                if (self::areNeighbors($a, $b)) {
+                    $a->addUnit(MarkerUnit::fromMarker($b));
+                    $finalMarkers[] = $a;
+                    $paired[$i] = true;
+                    $paired[$j] = true;
+                    $merged = true;
                     break;
                 }
             }
+
+            if (!$merged) {
+                $finalMarkers[] = $a;
+            }
         }
 
-        return $umPairs;
+        return $finalMarkers;
     }
 
-    public function areNeighbors(Marker $a, Marker $b): bool
+    public static function areNeighbors(Marker $a, Marker $b): bool
     {
         if ($a->position === null || $b->position === null) {
             return false;

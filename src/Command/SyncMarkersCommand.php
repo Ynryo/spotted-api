@@ -5,6 +5,7 @@ namespace App\Command;
 use App\Contract\TransportProviderInterface;
 use App\Enum\CacheTtl;
 use App\Model\Marker\Marker;
+use App\Service\TrainUMService;
 use Redis;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -71,6 +72,8 @@ class SyncMarkersCommand extends Command
                         $output->writeln("<error>Erreur lors de la récupération de {$provider->getName()} : {$e->getMessage()}</error>");
                     }
                 }
+
+                $allMarkers = TrainUMService::processUM($allMarkers);
 
                 $rawFlux = [
                     'items' => $allMarkers,

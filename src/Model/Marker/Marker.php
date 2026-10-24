@@ -3,19 +3,17 @@
 namespace App\Model\Marker;
 
 use App\DTO\MarkerQueryDto;
+use JsonSerializable;
 
-readonly class Marker
+class Marker implements JsonSerializable
 {
     /**
      * @param MarkerUnit[] $units
      */
     public function __construct(
-        public string          $id,
-        public ?MarkerPosition $position = null,
-        public ?string         $lineNumber = null,
-        public ?string         $color = null,
-        public ?string         $fillColor = null,
-        public array           $units = [],
+        public string  $id,
+        public ?string $lineNumber = null,
+        public array   $units = [],
     )
     {
     }
@@ -40,34 +38,32 @@ readonly class Marker
             new MarkerUnit(
                 id: $id,
                 lineNumber: $lineNumber,
+                color: (string)$data['color'] ?? "#fff",
+                fillColor: (string)$data['fillColor'] ?? "#000",
             ),
         ];
 
         return new self(
             id: $id,
-            position: MarkerPosition::fromArray($data['position']),
+//            position: MarkerPosition::fromArray($data['position']), //equals à la moyenne des units
             lineNumber: $lineNumber,
-            color: (string)$data['color'] ?? "#fff",
-            fillColor: (string)$data['fillColor'] ?? "#000",
             units: $units,
         );
     }
 
+    public function addUnit(MarkerUnit $unit): void
+    {
+        $this->units[] = $unit;
+    }
+
     public static function isTrainId(string $id): bool
     {
-        return str_starts_with($id, 'SNCF')
-            || str_contains($id, 'Eurostar')
-            || str_contains($id, 'Sleeper');
+        return str_starts_with($id, 'SNCF') || str_contains($id, 'Eurostar') || str_contains($id, 'Sleeper');
     }
 
     public function isTrain(): bool
     {
         return self::isTrainId($this->id);
-    }
-
-    public function getBearing(): float
-    {
-        return $this->position?->bearing ?? 0.0;
     }
 
     public function isInBounds(?MarkerQueryDto $query): bool
@@ -97,5 +93,22 @@ readonly class Marker
         }
 
         return true;
+    }
+
+//    public function getPosition(): MarkerPosition
+//    {
+//        if (isset($units) && is_array($units)) {
+//
+//        }
+//    }
+
+    public function jsonSerialize(): mixed
+    {
+        return [
+            'id' => $this->id,
+            'lineNumber' => $this->lineNumber,
+            'position' => ,
+            'units' => $this->units,
+        ];
     }
 }
