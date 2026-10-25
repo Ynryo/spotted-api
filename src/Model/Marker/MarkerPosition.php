@@ -17,22 +17,17 @@ readonly class MarkerPosition
      */
     public static function fromArray(?array $data = null): ?self
     {
-        if (empty($data)) {
+        if (empty($data) || !isset($data['latitude'], $data['longitude'])) {
             return null;
         }
 
-        $lat = $data['latitude'] ?? $data['lat'] ?? null;
-        $lon = $data['longitude'] ?? $data['lon'] ?? null;
-
-        if ($lat === null || $lon === null) {
-            return null;
-        }
+        $bearing = isset($data['bearing']) ? (float)$data['bearing'] : null;
 
         return new self(
-            latitude: (float)$lat,
-            longitude: (float)$lon,
-            bearing: isset($data['bearing']) && $data['bearing'] !== null ? (float)$data['bearing'] : null,
-            type: isset($data['type']) && $data['type'] !== null ? (string)$data['type'] : null,
+            latitude: (float)$data['latitude'] ?? null,
+            longitude: (float)$data['longitude'] ?? null,
+            bearing: $bearing,
+            type: (string)$data['type'] ?? null,
         );
     }
 }

@@ -30,16 +30,14 @@ class MarkerController extends AbstractController
         }
 
         $content = json_decode($raw, true);
-        $rawMarkers = $content['items'] ?? $content['markers'] ?? (is_array($content) ? $content : []);
+        $rawMarkers = $content['items'] ?? [];
 
         /** @var Marker[] $markers */
         $markers = [];
         foreach ($rawMarkers as $rawMarker) {
             if (is_array($rawMarker)) {
                 $marker = Marker::fromArray($rawMarker);
-                if ($marker !== null) {
-                    $markers[] = $marker;
-                }
+                if ($marker !== null) $markers[] = $marker;
             }
         }
 

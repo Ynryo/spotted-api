@@ -23,26 +23,35 @@ class Marker implements JsonSerializable
      */
     public static function fromArray(?array $data = null): ?self
     {
-        if (empty($data) || !isset($data['id'], $data['position'])) {
+        if (empty($data) || !isset($data['id'], $data['lineNumber'], $data['position'])) {
             return null;
         }
 
         $id = (string)$data['id'];
 
-        $lineNumber = (string)$data['lineNumber'] ?? null;
+        $lineUnitNumber = (string)$data['lineNumber'] ?? null;
         if (self::isTrainId($id) && !empty($data['vehicleNumber'])) {
-            $lineNumber = (string)$data['vehicleNumber'];
+            $lineUnitNumber = (string)$data['vehicleNumber'];
         }
 
         $units = [
             new MarkerUnit(
                 id: $id,
-                lineNumber: $lineNumber,
+                lineNumber: $lineUnitNumber,
                 position: MarkerPosition::fromArray($data['position']),
-                color: (string)$data['color'] ?? "#fff",
-                fillColor: (string)$data['fillColor'] ?? "#000",
+                color: (string)($data['color'] ?? "#fff"),
+                fillColor: (string)($data['fillColor'] ?? "#000"),
             ),
         ];
+
+        $lineNumber = "";
+        foreach ($units as $unit) {
+            if ($lineNumber === "") {
+                $lineNumber = $unit->lineNumber;
+            } else {
+                $lineNumber = $lineNumber . "/". $unit->lineNumber;
+            }
+        }
 
         return new self(
             id: $id,
@@ -72,12 +81,12 @@ class Marker implements JsonSerializable
             return true;
         }
 
-        if ($this->position === null) {
+        if ($this->getPosition() === null) {
             return false;
         }
 
-        $lat = $this->position->latitude;
-        $lon = $this->position->longitude;
+        $lat = $this->getPosition()->latitude;
+        $lon = $this->getPosition()->longitude;
 
         if ($query->swLat !== null && $lat < $query->swLat) {
             return false;

@@ -13,10 +13,10 @@ class TrainUMService
      * @param Marker[] $markers
      * @return Marker[]
      */
-    public static function processUM(array $markers): array
-    {
-        return self::detectUM($markers);
-    }
+//    public static function processUM(array $markers): array
+//    {
+//        return self::detectUM($markers);
+//    }
 
     /**
      * @param Marker[] $markers
@@ -34,7 +34,7 @@ class TrainUMService
             }
 
             $a = $markers[$i];
-            if (!$a->isTrain() || $a->position === null || $a->position->bearing === null || $a->position->bearing == 0.0) {
+            if (!$a->isTrain() || $a->getPosition() === null || $a->getPosition()->bearing === null || $a->getPosition()->bearing == 0.0) {
                 $finalMarkers[] = $a;
                 continue;
             }
@@ -44,7 +44,7 @@ class TrainUMService
                 if (isset($paired[$j])) continue;
                 $b = $markers[$j];
                 if ($a === $b) continue;
-                if (!$b->isTrain() || $b->position === null || $b->position->bearing === null || $b->position->bearing == 0.0) continue;
+                if (!$b->isTrain() || $b->getPosition() === null || $b->getPosition()->bearing === null || $b->getPosition()->bearing == 0.0) continue;
 
                 if (self::areNeighbors($a, $b)) {
                     $a->addUnit(MarkerUnit::fromMarker($b));
@@ -66,11 +66,11 @@ class TrainUMService
 
     public static function areNeighbors(Marker $a, Marker $b): bool
     {
-        if ($a->position === null || $b->position === null) {
+        if ($a->getPosition() === null || $b->getPosition() === null) {
             return false;
         }
 
-        return abs($a->position->latitude - $b->position->latitude) < self::UM_THRESHOLD_DEG
-            && abs($a->position->longitude - $b->position->longitude) < self::UM_THRESHOLD_DEG;
+        return abs($a->getPosition()->latitude - $b->getPosition()->latitude) < self::UM_THRESHOLD_DEG
+            && abs($a->getPosition()->longitude - $b->getPosition()->longitude) < self::UM_THRESHOLD_DEG;
     }
 }

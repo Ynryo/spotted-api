@@ -52,15 +52,13 @@ class SyncMarkersCommand extends Command
                         $rawJson = $provider->getLiveMarkers();
                         $decoded = json_decode($rawJson, true);
 
-                        $items = $decoded['items'] ?? $decoded['markers'] ?? (is_array($decoded) ? $decoded : []);
+                        $items = $decoded['items'] ?? [];
                         $providerMarkers = [];
 
                         foreach ($items as $item) {
                             if (is_array($item)) {
                                 $marker = Marker::fromArray($item);
-                                if ($marker !== null) {
-                                    $providerMarkers[] = $marker;
-                                }
+                                if ($marker !== null) $providerMarkers[] = $marker;
                             }
                         }
 
@@ -73,7 +71,7 @@ class SyncMarkersCommand extends Command
                     }
                 }
 
-                $allMarkers = TrainUMService::processUM($allMarkers);
+                $allMarkers = TrainUMService::detectUM($allMarkers);
 
                 $rawFlux = [
                     'items' => $allMarkers,
