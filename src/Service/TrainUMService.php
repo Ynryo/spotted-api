@@ -4,10 +4,12 @@ namespace App\Service;
 
 use App\Model\Marker\Marker;
 use App\Model\Marker\MarkerUnit;
+use function PHPUnit\Framework\equalTo;
 
 class TrainUMService
 {
     private const float UM_THRESHOLD_DEG = 0.0005;
+    const float BEARING_THRESHOLD_DEG = 5.0;
 
     /**
      * @param Marker[] $markers
@@ -70,7 +72,11 @@ class TrainUMService
             return false;
         }
 
+        $diffBearing = abs($a->getPosition()->bearing - $a->getPosition()->bearing);
+        if ($diffBearing > 180) $diffBearing = 360 - $diffBearing;
+
         return abs($a->getPosition()->latitude - $b->getPosition()->latitude) < self::UM_THRESHOLD_DEG
-            && abs($a->getPosition()->longitude - $b->getPosition()->longitude) < self::UM_THRESHOLD_DEG;
+            && abs($a->getPosition()->longitude - $b->getPosition()->longitude) < self::UM_THRESHOLD_DEG
+            && $diffBearing < self::BEARING_THRESHOLD_DEG;
     }
 }

@@ -21,12 +21,10 @@ readonly class MarkerPosition
             return null;
         }
 
-        $bearing = isset($data['bearing']) ? (float)$data['bearing'] : null;
-
         return new self(
             latitude: (float)$data['latitude'] ?? null,
             longitude: (float)$data['longitude'] ?? null,
-            bearing: $bearing,
+            bearing: isset($data['bearing']) ? (float)$data['bearing'] : null,
             type: (string)$data['type'] ?? null,
         );
     }

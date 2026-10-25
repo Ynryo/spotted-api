@@ -82,17 +82,19 @@ class Marker implements JsonSerializable
         if (isset($this->units) && is_array($this->units)) {
             $totalLat = 0;
             $totalLon = 0;
+            $totalBearing = 0;
             $count = 0;
             foreach ($this->units as $unit) {
                 $totalLat += $unit->position->latitude;
                 $totalLon += $unit->position->longitude;
+                $totalBearing += $unit->position->bearing;
                 $count++;
             }
             if ($count == 0) return null;
             $averageLat = $totalLat / $count;
             $averageLon = $totalLon / $count;
-            $bearing = $this->units[0]->position->bearing;
-            return new MarkerPosition($averageLat, $averageLon, $bearing);
+            $averageBearing = $totalBearing / $count;
+            return new MarkerPosition($averageLat, $averageLon, $averageBearing);
         }
         return null;
     }
