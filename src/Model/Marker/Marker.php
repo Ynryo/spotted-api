@@ -11,8 +11,8 @@ class Marker implements JsonSerializable
      * @param MarkerUnit[] $units
      */
     public function __construct(
-        public string  $id,
-        public array   $units = [],
+        public string $id,
+        public array  $units = [],
     )
     {
     }
@@ -22,26 +22,48 @@ class Marker implements JsonSerializable
      */
     public static function fromArray(?array $data = null): ?self
     {
-        if (empty($data) || !isset($data['id'], $data['lineNumber'], $data['position'])) {
+        if (empty($data) || !isset($data['id'])) {
             return null;
         }
 
         $id = (string)$data['id'];
 
-        $lineUnitNumber = (string)$data['lineNumber'] ?? null;
-        if (self::isTrainId($id) && !empty($data['vehicleNumber'])) {
-            $lineUnitNumber = (string)$data['vehicleNumber'];
+        $units = [];
+        if (!empty($data['units']) && is_array($data['units'])) {
+            foreach ($data['units'] as $unitData) {
+                if ($unitData instanceof MarkerUnit) {
+                    $units[] = $unitData;
+                } elseif (is_array($unitData)) {
+                    $unit = MarkerUnit::fromArray($unitData);
+                    if ($unit !== null) {
+                        $units[] = $unit;
+                    }
+                }
+            }
         }
 
-        $units = [
-            new MarkerUnit(
-                id: $id,
-                lineNumber: $lineUnitNumber,
-                position: MarkerPosition::fromArray($data['position']),
-                color: (string)($data['color'] ?? "#fff"),
-                fillColor: (string)($data['fillColor'] ?? "#000"),
-            ),
-        ];
+        if (empty($units)) {
+            $posData = $data['position'] ?? $data;
+            $position = MarkerPosition::fromArray($posData);
+            if ($position === null) {
+                return null;
+            }
+
+            $lineUnitNumber = isset($data['lineNumber']) ? (string)$data['lineNumber'] : null;
+            if (self::isTrainId($id) && !empty($data['vehicleNumber'])) {
+                $lineUnitNumber = (string)$data['vehicleNumber'];
+            }
+
+            $units = [
+                new MarkerUnit(
+                    id: $id,
+                    lineNumber: $lineUnitNumber,
+                    position: $position,
+                    color: (string)($data['color'] ?? "#fff"),
+                    fillColor: (string)($data['fillColor'] ?? "#000"),
+                ),
+            ];
+        }
 
         return new self(
             id: $id,
@@ -66,37 +88,103 @@ class Marker implements JsonSerializable
 
     public function getLineNumber(): string
     {
-        $lineNumber = "";
+        $lineNumbers = [];
         foreach ($this->units as $unit) {
-            if ($lineNumber === "") {
-                $lineNumber = $unit->lineNumber;
-            } else {
-                $lineNumber = $lineNumber . "/". $unit->lineNumber;
+            if (!empty($unit->lineNumber) && !in_array($unit->lineNumber, $lineNumbers, true)) {
+                $lineNumbers[] = $unit->lineNumber;
             }
         }
-        return $lineNumber;
+
+        return implode('/', $lineNumbers);
+    }
+
+    public function isInBounds(?MarkerQueryDto $query): bool
+    {
+        if ($query === null || !$query->hasCoordinates()) {
+            return true;
+        }
+
+        $position = $this->getPosition();
+        if ($position === null) {
+            return false;
+        }
+
+        $lat = $position->latitude;
+        $lon = $position->longitude;
+
+        if ($query->swLat !== null && $lat < $query->swLat) {
+            return false;
+        }
+        if ($query->neLat !== null && $lat > $query->neLat) {
+            return false;
+        }
+        if ($query->swLon !== null && $lon < $query->swLon) {
+            return false;
+        }
+        if ($query->neLon !== null && $lon > $query->neLon) {
+            return false;
+        }
+
+        return true;
     }
 
     public function getPosition(): ?MarkerPosition
     {
-        if (isset($this->units) && is_array($this->units)) {
-            $totalLat = 0;
-            $totalLon = 0;
-            $totalBearing = 0;
-            $count = 0;
-            foreach ($this->units as $unit) {
-                $totalLat += $unit->position->latitude;
-                $totalLon += $unit->position->longitude;
-                $totalBearing += $unit->position->bearing;
-                $count++;
-            }
-            if ($count == 0) return null;
-            $averageLat = $totalLat / $count;
-            $averageLon = $totalLon / $count;
-            $averageBearing = $totalBearing / $count;
-            return new MarkerPosition($averageLat, $averageLon, $averageBearing);
+        if (empty($this->units)) {
+            return null;
         }
-        return null;
+
+        $totalLat = 0.0;
+        $totalLon = 0.0;
+        $count = 0;
+        $firstPosition = null;
+
+        foreach ($this->units as $unit) {
+            if ($unit->position === null) {
+                continue;
+            }
+
+            $totalLat += $unit->position->latitude;
+            $totalLon += $unit->position->longitude;
+            $count++;
+
+            if ($firstPosition === null) {
+                $firstPosition = $unit->position;
+            }
+        }
+
+        if ($count === 0) {
+            return null;
+        }
+
+        return new MarkerPosition(
+            latitude: $totalLat / $count,
+            longitude: $totalLon / $count,
+            bearing: $firstPosition?->bearing,
+            type: $firstPosition?->type,
+        );
+    }
+
+    public function __get(string $name): mixed
+    {
+        return match ($name) {
+            'position' => $this->getPosition(),
+            'lineNumber' => $this->getLineNumber(),
+            'color' => $this->units[0]->color ?? null,
+            'fillColor' => $this->units[0]->fillColor ?? null,
+            default => null,
+        };
+    }
+
+    public function __isset(string $name): bool
+    {
+        return match ($name) {
+            'position' => $this->getPosition() !== null,
+            'lineNumber' => $this->getLineNumber() !== '',
+            'color' => isset($this->units[0]->color),
+            'fillColor' => isset($this->units[0]->fillColor),
+            default => false,
+        };
     }
 
     public function jsonSerialize(): array

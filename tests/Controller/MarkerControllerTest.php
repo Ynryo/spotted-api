@@ -91,27 +91,34 @@ class MarkerControllerTest extends TestCase
         $this->assertSame([], $data['data']);
     }
 
-    public function testTrainLineNumberReplacedByVehicleNumberAndVehicleNumberRemoved(): void
+    public function testGetMarkersReturnsSerializedMarkersFromRedis(): void
     {
         $redis = $this->createMock(Redis::class);
         $markersData = [
             'items' => [
                 [
                     'id' => 'SNCF-20::ServiceJourney:123',
-                    'lineNumber' => 'K20',
-                    'vehicleNumber' => '851711',
+                    'lineNumber' => '851711',
                     'position' => ['latitude' => 50.6, 'longitude' => 3.1],
+                    'units' => [
+                        ['id' => 'SNCF-20::ServiceJourney:123', 'lineNumber' => '851711'],
+                    ],
                 ],
                 [
                     'id' => 'TCL:Bus:456',
                     'lineNumber' => 'C3',
-                    'vehicleNumber' => '1234',
                     'position' => ['latitude' => 45.7, 'longitude' => 4.8],
+                    'units' => [
+                        ['id' => 'TCL:Bus:456', 'lineNumber' => 'C3'],
+                    ],
                 ],
                 [
                     'id' => 'SNCF-5::ServiceJourney:789',
                     'lineNumber' => '071B',
                     'position' => ['latitude' => 48.8, 'longitude' => 2.3],
+                    'units' => [
+                        ['id' => 'SNCF-5::ServiceJourney:789', 'lineNumber' => '071B'],
+                    ],
                 ],
             ],
         ];
@@ -123,18 +130,10 @@ class MarkerControllerTest extends TestCase
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertCount(3, $data['data']);
-
-        // Train avec vehicleNumber : lineNumber devient le numéro de train et vehicleNumber est supprimé
         $this->assertSame('851711', $data['data'][0]['lineNumber']);
-        $this->assertArrayNotHasKey('vehicleNumber', $data['data'][0]);
-
-        // Bus avec vehicleNumber : lineNumber reste le numéro de ligne (C3) et vehicleNumber est supprimé
         $this->assertSame('C3', $data['data'][1]['lineNumber']);
-        $this->assertArrayNotHasKey('vehicleNumber', $data['data'][1]);
-
-        // Train sans vehicleNumber : lineNumber reste inchangé (071B)
         $this->assertSame('071B', $data['data'][2]['lineNumber']);
-        $this->assertArrayNotHasKey('vehicleNumber', $data['data'][2]);
+        $this->assertArrayHasKey('units', $data['data'][0]);
     }
 
     protected function setUp(): void
