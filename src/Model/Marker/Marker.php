@@ -12,7 +12,6 @@ class Marker implements JsonSerializable
      */
     public function __construct(
         public string  $id,
-        public ?string $lineNumber = null,
         public array   $units = [],
     )
     {
@@ -44,18 +43,8 @@ class Marker implements JsonSerializable
             ),
         ];
 
-        $lineNumber = "";
-        foreach ($units as $unit) {
-            if ($lineNumber === "") {
-                $lineNumber = $unit->lineNumber;
-            } else {
-                $lineNumber = $lineNumber . "/". $unit->lineNumber;
-            }
-        }
-
         return new self(
             id: $id,
-            lineNumber: $lineNumber,
             units: $units,
         );
     }
@@ -75,33 +64,17 @@ class Marker implements JsonSerializable
         return self::isTrainId($this->id);
     }
 
-    public function isInBounds(?MarkerQueryDto $query): bool
+    public function getLineNumber(): string
     {
-        if ($query === null || !$query->hasCoordinates()) {
-            return true;
+        $lineNumber = "";
+        foreach ($this->units as $unit) {
+            if ($lineNumber === "") {
+                $lineNumber = $unit->lineNumber;
+            } else {
+                $lineNumber = $lineNumber . "/". $unit->lineNumber;
+            }
         }
-
-        if ($this->getPosition() === null) {
-            return false;
-        }
-
-        $lat = $this->getPosition()->latitude;
-        $lon = $this->getPosition()->longitude;
-
-        if ($query->swLat !== null && $lat < $query->swLat) {
-            return false;
-        }
-        if ($query->neLat !== null && $lat > $query->neLat) {
-            return false;
-        }
-        if ($query->swLon !== null && $lon < $query->swLon) {
-            return false;
-        }
-        if ($query->neLon !== null && $lon > $query->neLon) {
-            return false;
-        }
-
-        return true;
+        return $lineNumber;
     }
 
     public function getPosition(): ?MarkerPosition
@@ -128,7 +101,7 @@ class Marker implements JsonSerializable
     {
         return [
             'id' => $this->id,
-            'lineNumber' => $this->lineNumber,
+            'lineNumber' => $this->getLineNumber(),
             'position' => $this->getPosition(),
             'units' => $this->units,
         ];

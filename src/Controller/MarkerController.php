@@ -30,20 +30,25 @@ class MarkerController extends AbstractController
         }
 
         $content = json_decode($raw, true);
-        $rawMarkers = $content['items'] ?? [];
-
-        /** @var Marker[] $markers */
-        $markers = [];
-        foreach ($rawMarkers as $rawMarker) {
-            if (is_array($rawMarker)) {
-                $marker = Marker::fromArray($rawMarker);
-                if ($marker !== null) $markers[] = $marker;
-            }
-        }
+        $markers = $content['items'] ?? [];
 
         if ($query !== null && $query->hasCoordinates()) {
-            $markers = array_filter($markers, fn(Marker $marker) => $marker->isInBounds($query));
-        }
+            $markers = array_filter($markers, function (array $m) use ($query) {
+                $pos = $m['position'] ?? null;
+                if (!is_array($pos) || !isset($pos['latitude'], $pos['longitude'])) {
+                    return false;
+                }
+
+                $lat = (float)$pos['latitude'];
+                $lon = (float)$pos['longitude'];
+
+                if ($query->swLat !== null && $lat < $query->swLat) return false;
+                if ($query->neLat !== null && $lat > $query->neLat) return false;
+                if ($query->swLon !== null && $lon < $query->swLon) return false;
+                if ($query->neLon !== null && $lon > $query->neLon) return false;
+
+                return true;
+            });        }
 
         return new JsonResponse([
             'count' => count($markers),

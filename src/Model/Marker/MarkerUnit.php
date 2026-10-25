@@ -44,7 +44,7 @@ readonly class MarkerUnit implements JsonSerializable
 
         return new self(
             id: $marker->id,
-            lineNumber: $marker->lineNumber,
+            lineNumber: $marker->getLineNumber(),
             position: $firstUnit?->position ?? $marker->getPosition(),
             color: $firstUnit?->color ?? "#fff",
             fillColor: $firstUnit?->fillColor ?? "#000",
