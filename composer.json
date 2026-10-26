@@ -1,4 +1,8 @@
 {
+    "name": "ynryo/spotted-api",
+    "description": "API pour Spotted - Agrégation et suivi temps réel des transports",
+    "license": "MIT",
+    "type": "project",
     "require": {
         "symfony/flex": "^2.11",
         "symfony/console": "^7.4",
