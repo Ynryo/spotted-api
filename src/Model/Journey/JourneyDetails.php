@@ -20,6 +20,7 @@ readonly class JourneyDetails
         public string                         $id,
         public ?Line                          $line = null,
         public ?string                        $destination = null,
+        public array                          $coupledUnits = [],
         public ?string                        $serviceDate = null,
         public JourneyOccupancy               $occupancy = JourneyOccupancy::UNKNOWN,
         public JourneyWheelchairAccessibility $wheelchairAccessibility = JourneyWheelchairAccessibility::UNKNOWN,
@@ -63,6 +64,7 @@ readonly class JourneyDetails
      */
     public static function fromArray(
         array           $journey,
+        array           $coupledUnits,
         ?Line           $line = null,
         ?Path           $path = null,
         ?Network        $network = null,
@@ -99,6 +101,7 @@ readonly class JourneyDetails
             line: $line,
             destination: $journey['destination'] ?? null,
             serviceDate: $journey['serviceDate'] ?? null,
+            coupledUnits: $coupledUnits,
             occupancy: JourneyOccupancy::fromString($journey['occupancy'] ?? null),
             wheelchairAccessibility: $wheelchairAccessibility,
             bikeAccessibility: $bikeAccessibility,

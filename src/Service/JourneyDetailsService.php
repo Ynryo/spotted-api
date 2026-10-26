@@ -43,6 +43,10 @@ readonly class JourneyDetailsService
             $this->redis->set($journeyId, json_encode($rawJourney), ['ex' => CacheTtl::REALTIME->value]);
         }
 
+        // on get les rames couplees depuis redis
+        $coupledUnits = $this->redis->get("coupledUnits:$journeyId");
+         if (!$coupledUnits) $coupledUnits = [];
+
         // Vehicle - on tente via le service, sinon fallback sur les données brutes
         $vehicle = null;
         if (isset($rawJourney['vehicle'])) {
@@ -82,6 +86,7 @@ readonly class JourneyDetailsService
 
         return JourneyDetails::fromArray(
             $rawJourney,
+            $coupledUnits ?? [],
             $line,
             $path,
             $network ?? null,
