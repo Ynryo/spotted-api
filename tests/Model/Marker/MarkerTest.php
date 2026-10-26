@@ -91,12 +91,12 @@ class MarkerTest extends TestCase
 
         $this->assertNotNull($marker);
         $this->assertSame('SNCF-20::ServiceJourney:123', $marker->id);
-        $this->assertSame('851711', $marker->lineNumber);
-        $this->assertSame('#FFFFFF', $marker->color);
-        $this->assertSame('#E4267D', $marker->fillColor);
-        $this->assertNotNull($marker->position);
-        $this->assertSame(50.6, $marker->position->latitude);
-        $this->assertSame(3.1, $marker->position->longitude);
+        $this->assertSame('851711', $marker->getLineNumber());
+        $this->assertSame('#FFFFFF', $marker->units[0]->color);
+        $this->assertSame('#E4267D', $marker->units[0]->fillColor);
+        $this->assertNotNull($marker->getPosition());
+        $this->assertSame(50.6, $marker->getPosition()->latitude);
+        $this->assertSame(3.1, $marker->getPosition()->longitude);
         $this->assertTrue($marker->isTrain());
         $this->assertCount(1, $marker->units);
         $this->assertSame('851711', $marker->units[0]->lineNumber);
@@ -119,7 +119,7 @@ class MarkerTest extends TestCase
         $marker = Marker::fromArray($raw);
 
         $this->assertNotNull($marker);
-        $this->assertSame('C3', $marker->lineNumber);
+        $this->assertSame('C3', $marker->getLineNumber());
         $this->assertFalse($marker->isTrain());
         $this->assertCount(1, $marker->units);
         $this->assertSame('C3', $marker->units[0]->lineNumber);
@@ -153,6 +153,33 @@ class MarkerTest extends TestCase
         $this->assertCount(2, $serialized['units']);
         $this->assertSame('7682', $serialized['units'][0]['lineNumber']);
         $this->assertSame('8646', $serialized['units'][1]['lineNumber']);
+    }
+
+    public function testPositionTypeHierarchyOnUnits(): void
+    {
+        // 2 unités GPS -> GPS
+        $markerGps = new Marker('1', [
+            new MarkerUnit('1', '1', new MarkerPosition(48.0, 2.0, 10.0, 'GPS')),
+            new MarkerUnit('2', '2', new MarkerPosition(48.0, 2.0, 10.0, 'GPS')),
+        ]);
+        $this->assertSame('GPS', $markerGps->getPositionType());
+        $this->assertSame('GPS', $markerGps->getPosition()->type);
+
+        // 1 GPS + 1 COMPUTED -> COMPUTED
+        $markerMixed = new Marker('1', [
+            new MarkerUnit('1', '1', new MarkerPosition(48.0, 2.0, 10.0, 'GPS')),
+            new MarkerUnit('2', '2', new MarkerPosition(48.0, 2.0, 10.0, 'COMPUTED')),
+        ]);
+        $this->assertSame('COMPUTED', $markerMixed->getPositionType());
+        $this->assertSame('COMPUTED', $markerMixed->getPosition()->type);
+
+        // 1 COMPUTED + 1 THEORETICAL -> THEORETICAL
+        $markerTheorical = new Marker('1', [
+            new MarkerUnit('1', '1', new MarkerPosition(48.0, 2.0, 10.0, 'COMPUTED')),
+            new MarkerUnit('2', '2', new MarkerPosition(48.0, 2.0, 10.0, 'THEORETICAL')),
+        ]);
+        $this->assertSame('THEORETICAL', $markerTheorical->getPositionType());
+        $this->assertSame('THEORETICAL', $markerTheorical->getPosition()->type);
     }
 
     public function testMarkerIsTrain(): void

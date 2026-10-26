@@ -98,29 +98,48 @@ class Marker implements JsonSerializable
         return implode('/', $lineNumbers);
     }
 
+    public function getPositionType(): ?string
+    {
+        $priority = [
+            'THEORETICAL' => 1,
+            'THEORICAL' => 1,
+            'COMPUTED' => 2,
+            'GPS' => 3,
+        ];
+
+        $minType = null;
+        $minPriority = PHP_INT_MAX;
+
+        foreach ($this->units as $unit) {
+            $type = $unit->position?->type;
+            if ($type === null) continue;
+
+            $p = $priority[strtoupper($type)] ?? 1;
+            if ($p < $minPriority) {
+                $minPriority = $p;
+                $minType = $type;
+            }
+        }
+
+        return $minType;
+    }
+
     public function getPosition(): ?MarkerPosition
     {
-        if (empty($this->units)) {
-            return null;
-        }
+        if (empty($this->units)) return null;
 
         $totalLat = 0.0;
         $totalLon = 0.0;
+        $totalBearing = 0.0;
         $count = 0;
-        $firstPosition = null;
 
         foreach ($this->units as $unit) {
-            if ($unit->position === null) {
-                continue;
-            }
+            if ($unit->position === null) continue;
 
             $totalLat += $unit->position->latitude;
             $totalLon += $unit->position->longitude;
+            $totalBearing += $unit->position->bearing;
             $count++;
-
-            if ($firstPosition === null) {
-                $firstPosition = $unit->position;
-            }
         }
 
         if ($count === 0) {
@@ -130,8 +149,8 @@ class Marker implements JsonSerializable
         return new MarkerPosition(
             latitude: $totalLat / $count,
             longitude: $totalLon / $count,
-            bearing: $firstPosition?->bearing,
-            type: $firstPosition?->type,
+            bearing: $totalBearing / $count,
+            type: $this->getPositionType(),
         );
     }
 
