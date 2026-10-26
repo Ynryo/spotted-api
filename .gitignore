@@ -64,3 +64,8 @@
 # IDE
 .idea/
 .vscode/
+
+# Project & local development
+skills/
+scratch_*.php
+scratch/
