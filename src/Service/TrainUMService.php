@@ -22,20 +22,23 @@ class TrainUMService
 
         for ($i = 0; $i < $count; $i++) {
             if (isset($paired[$i])) continue;
-
             $a = $markers[$i];
-            if ($a->isTrain() && $a->getPosition() !== null && $a->getPosition()->bearing > 0) {
+            if (!$a->isTrain() || $a->getPosition() === null || $a->getPosition()->bearing == 0) {
+                $finalMarkers[] = $a;
+                continue;
+            }
+
                 for ($j = $i + 1; $j < $count; $j++) {
                     if (isset($paired[$j])) continue;
-
                     $b = $markers[$j];
-                    if ($b->isTrain() && $b->getPosition() !== null && $b->getPosition()->bearing > 0 && self::areNeighbors($a, $b)) {
+                    if (!$b->isTrain() || $b->getPosition() === null || $b->getPosition()->bearing == 0) continue;
+
+                    if (self::areNeighbors($a, $b)) {
                         $a->addUnit(MarkerUnit::fromMarker($b));
                         $paired[$j] = true;
                         break;
                     }
                 }
-            }
 
             $finalMarkers[] = $a;
         }
@@ -50,9 +53,7 @@ class TrainUMService
         }
 
         $diffBearing = abs($a->getPosition()->bearing - $b->getPosition()->bearing);
-        if ($diffBearing > 180) {
-            $diffBearing = 360 - $diffBearing;
-        }
+        if ($diffBearing > 180) $diffBearing = 360 - $diffBearing;
 
         return abs($a->getPosition()->latitude - $b->getPosition()->latitude) < self::UM_THRESHOLD_DEG
             && abs($a->getPosition()->longitude - $b->getPosition()->longitude) < self::UM_THRESHOLD_DEG
