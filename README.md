@@ -30,50 +30,6 @@ Une API REST moderne, performante et hautement disponible pour alimenter l'appli
 
 ---
 
-## 🏗️ Architecture & Composants
-
-```
-src/
-├── Command/
-│   └── SyncMarkersCommand.php       # Worker CLI de synchronisation continue des marqueurs dans Redis
-│
-├── Controller/                      # Points d'entrée REST & annotations OpenAPI
-│   ├── JourneyController.php        # Détails de parcours, arrêts, retards et composition
-│   ├── MarkerController.php         # Marqueurs temps réel avec filtrage géographique (BBox)
-│   ├── NetworkController.php        # Réseaux de transport et recherche de lignes
-│   ├── PathController.php           # Tracés géométriques vectoriels des parcours
-│   ├── RegionController.php         # Découpage administratif et réseaux régionaux
-│   └── VehicleController.php        # Données de flotte et détails de véhicules
-│
-├── DTO/                             # Objets de transfert et validation des requêtes (Validator)
-│   └── MarkerQueryDto.php           # Validation des coordonnées BBox et filtres
-│
-├── Enum/                            # Enums typés natifs PHP 8.1+
-│   ├── AirConditioning.php          # Statut climatisation (YES, NO, UNKNOWN)
-│   ├── CacheTtl.php                 # Centralisation des durées d'expiration Redis
-│   ├── Occupancy.php                # Niveau de charge à bord
-│   ├── StopType.php                 # Type d'arrêt (COMMERCIAL, TECHNICAL, PASSING...)
-│   ├── TrackingType.php             # Type de géolocalisation (REALTIME, ESTIMATED, STATIC)
-│   └── VehicleType.php              # Catégorie (BUS, TRAM, TRAIN, SUBWAY...)
-│
-├── Model/                           # Modèles métiers découplés et immuables
-│   ├── Journey/                     # Détails de trajets, arrêts et plateformes
-│   ├── Network/                     # Réseaux de transport et lignes
-│   ├── Path/                        # Géométrie et coordonnées des segments
-│   ├── Region/                      # Découpage territorial
-│   └── Vehicle/                     # Caractéristiques physiques du matériel roulant
-│
-└── Service/                         # Logique métier et intégrations externes
-    ├── BusTrackerClient.php         # Client HTTP vers l'API de données de transport
-    ├── CartoTchooClient.php         # Client HTTP d'estimation des voies ferroviaires
-    ├── JourneyDetailsService.php    # Assemblage des trajets et enrichissement
-    ├── PlatformService.php          # Gestion et résolution des quais d'arrêts
-    ├── TrainUMService.php           # Algorithme de fusion des trains en Unité Multiple
-    └── VehicleService.php           # Gestion et enrichissement des informations véhicules
-```
-
----
-
 ## 🛠️ Stack Technique
 
 | Domaine | Technologie / Outil | Utilisation |
