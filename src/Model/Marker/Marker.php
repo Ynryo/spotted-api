@@ -98,36 +98,6 @@ class Marker implements JsonSerializable
         return implode('/', $lineNumbers);
     }
 
-    public function isInBounds(?MarkerQueryDto $query): bool
-    {
-        if ($query === null || !$query->hasCoordinates()) {
-            return true;
-        }
-
-        $position = $this->getPosition();
-        if ($position === null) {
-            return false;
-        }
-
-        $lat = $position->latitude;
-        $lon = $position->longitude;
-
-        if ($query->swLat !== null && $lat < $query->swLat) {
-            return false;
-        }
-        if ($query->neLat !== null && $lat > $query->neLat) {
-            return false;
-        }
-        if ($query->swLon !== null && $lon < $query->swLon) {
-            return false;
-        }
-        if ($query->neLon !== null && $lon > $query->neLon) {
-            return false;
-        }
-
-        return true;
-    }
-
     public function getPosition(): ?MarkerPosition
     {
         if (empty($this->units)) {
@@ -163,28 +133,6 @@ class Marker implements JsonSerializable
             bearing: $firstPosition?->bearing,
             type: $firstPosition?->type,
         );
-    }
-
-    public function __get(string $name): mixed
-    {
-        return match ($name) {
-            'position' => $this->getPosition(),
-            'lineNumber' => $this->getLineNumber(),
-            'color' => $this->units[0]->color ?? null,
-            'fillColor' => $this->units[0]->fillColor ?? null,
-            default => null,
-        };
-    }
-
-    public function __isset(string $name): bool
-    {
-        return match ($name) {
-            'position' => $this->getPosition() !== null,
-            'lineNumber' => $this->getLineNumber() !== '',
-            'color' => isset($this->units[0]->color),
-            'fillColor' => isset($this->units[0]->fillColor),
-            default => false,
-        };
     }
 
     public function jsonSerialize(): array
