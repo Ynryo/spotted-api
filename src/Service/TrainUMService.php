@@ -2,8 +2,10 @@
 
 namespace App\Service;
 
+use App\Enum\CacheTtl;
 use App\Model\Marker\Marker;
 use App\Model\Marker\MarkerUnit;
+use Redis;
 
 class TrainUMService
 {
@@ -14,7 +16,7 @@ class TrainUMService
      * @param Marker[] $markers
      * @return array<Marker>
      */
-    public static function detectUM(array $markers): array
+    public static function detectUM(array $markers, ?Redis $redis = null): array
     {
         $finalMarkers = [];
         $count = count($markers);
@@ -28,17 +30,21 @@ class TrainUMService
                 continue;
             }
 
-                for ($j = $i + 1; $j < $count; $j++) {
-                    if (isset($paired[$j])) continue;
-                    $b = $markers[$j];
-                    if (!$b->isTrain() || $b->getPosition() === null || $b->getPosition()->bearing == 0) continue;
+            for ($j = $i + 1; $j < $count; $j++) {
+                if (isset($paired[$j])) continue;
+                $b = $markers[$j];
+                if (!$b->isTrain() || $b->getPosition() === null || $b->getPosition()->bearing == 0) continue;
 
-                    if (self::areNeighbors($a, $b)) {
-                        $a->addUnit(MarkerUnit::fromMarker($b));
-                        $paired[$j] = true;
-                        break;
-                    }
+                if (self::areNeighbors($a, $b)) {
+                    $a->addUnit(MarkerUnit::fromMarker($b));
+                    $paired[$j] = true;
+
+                    $redis->set("coupledUnit:{$a->id}", json_encode($b->id), ['ex' => CacheTtl::REALTIME->value]);
+                    $redis->set("coupledUnit:{$b->id}", json_encode($a->id), ['ex' => CacheTtl::REALTIME->value]);
+
+                    break;
                 }
+            }
 
             $finalMarkers[] = $a;
         }

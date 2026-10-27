@@ -71,7 +71,7 @@ class SyncMarkersCommand extends Command
                     }
                 }
 
-                $allMarkers = TrainUMService::detectUM($allMarkers);
+                $allMarkers = TrainUMService::detectUM($allMarkers, $this->redis);
 
                 $rawFlux = [
                     'items' => $allMarkers,
