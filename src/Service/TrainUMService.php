@@ -39,8 +39,8 @@ class TrainUMService
                     $a->addUnit(MarkerUnit::fromMarker($b));
                     $paired[$j] = true;
 
-                    $redis->set("coupledUnit:{$a->id}", json_encode($b->id), ['ex' => CacheTtl::REALTIME->value]);
-                    $redis->set("coupledUnit:{$b->id}", json_encode($a->id), ['ex' => CacheTtl::REALTIME->value]);
+                    $redis->set("coupledUnits:{$a->id}", json_encode([$b->id]), ['ex' => CacheTtl::REALTIME->value]);
+                    $redis->set("coupledUnits:{$b->id}", json_encode([$a->id]), ['ex' => CacheTtl::REALTIME->value]);
 
                     break;
                 }

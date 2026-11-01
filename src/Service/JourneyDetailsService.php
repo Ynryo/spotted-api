@@ -46,6 +46,7 @@ readonly class JourneyDetailsService
         // on get les rames couplees depuis redis
         $coupledUnits = $this->redis->get("coupledUnits:$journeyId");
          if (!$coupledUnits) $coupledUnits = [];
+         else json_decode($coupledUnits, true);
 
         // Vehicle - on tente via le service, sinon fallback sur les données brutes
         $vehicle = null;
