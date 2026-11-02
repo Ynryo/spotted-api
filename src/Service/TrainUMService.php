@@ -18,13 +18,14 @@ class TrainUMService
      */
     public static function detectUM(array $markers, ?Redis $redis = null): array
     {
-        $finalMarkers = [];
-        $count = count($markers);
+        $finalMarkers = array_values(array_filter($markers, fn($m) => !$m->isTrain())) ?? []; //que les non trains
+        $trains = array_values(array_filter($markers, fn($m) => $m->isTrain())); //que les trains
+        $count = count($trains);
         $paired = [];
 
         for ($i = 0; $i < $count; $i++) {
             if (isset($paired[$i])) continue;
-            $a = $markers[$i];
+            $a = $trains[$i];
             if (!$a->isTrain() || $a->getPosition() === null || $a->getPosition()->bearing == 0) {
                 $finalMarkers[] = $a;
                 continue;
@@ -32,16 +33,14 @@ class TrainUMService
 
             for ($j = $i + 1; $j < $count; $j++) {
                 if (isset($paired[$j])) continue;
-                $b = $markers[$j];
+                $b = $trains[$j];
                 if (!$b->isTrain() || $b->getPosition() === null || $b->getPosition()->bearing == 0) continue;
 
                 if (self::areNeighbors($a, $b)) {
                     $a->addUnit(MarkerUnit::fromMarker($b));
                     $paired[$j] = true;
 
-                    $redis->set("coupledUnits:{$a->id}", json_encode([$b->id]), ['ex' => CacheTtl::REALTIME->value]);
-                    $redis->set("coupledUnits:{$b->id}", json_encode([$a->id]), ['ex' => CacheTtl::REALTIME->value]);
-
+                    self::cacheCoupledUnits([$a, $b], $redis);
                     break;
                 }
             }
@@ -64,5 +63,27 @@ class TrainUMService
         return abs($a->getPosition()->latitude - $b->getPosition()->latitude) < self::UM_THRESHOLD_DEG
             && abs($a->getPosition()->longitude - $b->getPosition()->longitude) < self::UM_THRESHOLD_DEG
             && $diffBearing < self::BEARING_THRESHOLD_DEG;
+    }
+
+    /**
+     * @param Marker[] $markers
+     */
+    public static function cacheCoupledUnits(array $markers, ?Redis $redis = null): void
+    {
+        if (!$redis || count($markers) < 2) {
+            return;
+        }
+
+        $allIds = array_map(fn(Marker $marker) => $marker->id, $markers);
+        $ttl = ['ex' => CacheTtl::REALTIME->value];
+
+        $pipe = $redis->pipeline();
+
+        foreach ($allIds as $id) {
+            $otherIds = array_values(array_diff($allIds, [$id]));
+            $pipe->set("coupledUnits:$id", json_encode($otherIds), $ttl);
+        }
+
+        $pipe->exec();
     }
 }
