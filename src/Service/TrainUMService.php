@@ -14,7 +14,8 @@ class TrainUMService
 
     /**
      * @param Marker[] $markers
-     * @return array<Marker>
+     * @param Redis|null $redis
+     * @return Marker[]
      */
     public static function detectUM(array $markers, ?Redis $redis = null): array
     {
@@ -51,6 +52,11 @@ class TrainUMService
         return $finalMarkers;
     }
 
+    /**
+     * @param Marker $a
+     * @param Marker $b
+     * @return bool
+     */
     public static function areNeighbors(Marker $a, Marker $b): bool
     {
         if ($a->getPosition() === null || $b->getPosition() === null) {
@@ -67,21 +73,19 @@ class TrainUMService
 
     /**
      * @param Marker[] $markers
+     * @param Redis|null $redis
+     * @return void
      */
     public static function cacheCoupledUnits(array $markers, ?Redis $redis = null): void
     {
-        if (!$redis || count($markers) < 2) {
-            return;
-        }
+        if (!$redis || count($markers) < 2) return;
 
-        $allIds = array_map(fn(Marker $marker) => $marker->id, $markers);
-        $ttl = ['ex' => CacheTtl::REALTIME->value];
-
+        $allIds = array_map(fn(Marker $marker) => $marker->id, $markers); //on refait l'array mais avec les ids
         $pipe = $redis->pipeline();
 
         foreach ($allIds as $id) {
-            $otherIds = array_values(array_diff($allIds, [$id]));
-            $pipe->set("coupledUnits:$id", json_encode($otherIds), $ttl);
+            $otherIds = array_values(array_diff($allIds, [$id])); //on supprime l'id de l'unit actuelle
+            $pipe->set("coupledUnits:$id", json_encode($otherIds), ['ex' => CacheTtl::REALTIME->value]);
         }
 
         $pipe->exec();
