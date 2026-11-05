@@ -19,7 +19,7 @@ class TrainUMService
      */
     public static function detectUM(array $markers, ?Redis $redis = null): array
     {
-        $finalMarkers = array_values(array_filter($markers, fn($m) => !$m->isTrain())) ?? []; //que les non trains
+        $finalMarkers = array_values(array_filter($markers, fn($m) => !$m->isTrain())); //que les non trains
         $trains = array_values(array_filter($markers, fn($m) => $m->isTrain())); //que les trains
         $count = count($trains);
         $paired = [];
@@ -81,11 +81,12 @@ class TrainUMService
         if (!$redis || count($markers) < 2) return;
 
         $allIds = array_map(fn(Marker $marker) => $marker->id, $markers); //on refait l'array mais avec les ids
-        $pipe = $redis->pipeline();
+        /** @var Redis $pipe */
+        $pipe = $redis->multi(Redis::PIPELINE);
 
         foreach ($allIds as $id) {
             $otherIds = array_values(array_diff($allIds, [$id])); //on supprime l'id de l'unit actuelle
-            $pipe->set("coupledUnits:$id", json_encode($otherIds), ['ex' => CacheTtl::REALTIME->value]);
+            $pipe->set("coupledUnits:$id", (string)json_encode($otherIds), ['ex' => CacheTtl::REALTIME->value]);
         }
 
         $pipe->exec();
