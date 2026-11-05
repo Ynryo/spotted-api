@@ -130,26 +130,48 @@ class Marker implements JsonSerializable
 
         $totalLat = 0.0;
         $totalLon = 0.0;
-        $totalBearing = 0.0;
         $count = 0;
+        $bearings = [];
 
         foreach ($this->units as $unit) {
             if ($unit->position === null) continue;
 
             $totalLat += $unit->position->latitude;
             $totalLon += $unit->position->longitude;
-            $totalBearing += $unit->position->bearing;
             $count++;
+
+            if ($unit->position->bearing !== null) {
+                $bearings[] = $unit->position->bearing;
+            }
         }
 
         if ($count === 0) {
             return null;
         }
 
+        $avgBearing = null;
+        if (!empty($bearings)) {
+            $baseBearing = $bearings[0];
+            $totalBearing = 0.0;
+
+            foreach ($bearings as $b) {
+                $diff = $b - $baseBearing;
+                if ($diff > 180) {
+                    $b -= 360;
+                } elseif ($diff < -180) {
+                    $b += 360;
+                }
+                $totalBearing += $b;
+            }
+
+            $avgBearing = $totalBearing / count($bearings);
+            $avgBearing = fmod(fmod($avgBearing, 360.0) + 360.0, 360.0);
+        }
+
         return new MarkerPosition(
             latitude: $totalLat / $count,
             longitude: $totalLon / $count,
-            bearing: $totalBearing / $count,
+            bearing: $avgBearing,
             type: $this->getPositionType(),
         );
     }

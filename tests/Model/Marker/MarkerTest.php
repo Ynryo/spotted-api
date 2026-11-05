@@ -182,6 +182,18 @@ class MarkerTest extends TestCase
         $this->assertSame('THEORETICAL', $markerTheorical->getPosition()->type);
     }
 
+    public function testMarkerBearingCircularAverageAroundNorth(): void
+    {
+        $marker = new Marker('1', [
+            new MarkerUnit('1', '1', new MarkerPosition(48.0, 2.0, 359.0, 'GPS')),
+            new MarkerUnit('2', '2', new MarkerPosition(48.0, 2.0, 1.0, 'GPS')),
+        ]);
+
+        $position = $marker->getPosition();
+        $this->assertNotNull($position);
+        $this->assertEqualsWithDelta(0.0, $position->bearing, 0.01);
+    }
+
     public function testMarkerIsTrain(): void
     {
         $sncf = Marker::fromArray(['id' => 'SNCF-4::Journey:1', 'lat' => 48.0, 'lon' => 2.0]);
