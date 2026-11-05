@@ -31,8 +31,8 @@ readonly class MarkerPosition
         return new self(
             latitude: (float)$lat,
             longitude: (float)$lon,
-            bearing: isset($data['bearing']) && $data['bearing'] !== null ? (float)$data['bearing'] : null,
-            type: isset($data['type']) && $data['type'] !== null ? (string)$data['type'] : null,
+            bearing: isset($data['bearing']) ? (float)$data['bearing'] : null,
+            type: isset($data['type']) ? (string)$data['type'] : null,
         );
     }
 }

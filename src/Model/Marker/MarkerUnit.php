@@ -44,13 +44,16 @@ readonly class MarkerUnit implements JsonSerializable
 
         return new self(
             id: $marker->id,
-            lineNumber: $firstUnit?->lineNumber ?? $marker->getLineNumber(),
-            position: $firstUnit?->position ?? $marker->getPosition(),
-            color: $firstUnit?->color ?? "#fff",
-            fillColor: $firstUnit?->fillColor ?? "#000",
+            lineNumber: $firstUnit->lineNumber ?? $marker->getLineNumber(),
+            position: $firstUnit->position ?? $marker->getPosition(),
+            color: $firstUnit->color ?? "#fff",
+            fillColor: $firstUnit->fillColor ?? "#000",
         );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function jsonSerialize(): array
     {
         return [

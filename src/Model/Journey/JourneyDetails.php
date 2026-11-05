@@ -14,6 +14,7 @@ use App\Model\Vehicle\VehicleDetails;
 readonly class JourneyDetails
 {
     /**
+     * @param array<string|int, mixed> $coupledUnits
      * @param JourneyStopDetails[] $stops
      */
     public function __construct(
@@ -60,11 +61,12 @@ readonly class JourneyDetails
 
     /**
      * @param array<string, mixed> $journey
+     * @param array<string|int, mixed> $coupledUnits
      * @param JourneyStopDetails[] $stops
      */
     public static function fromArray(
         array           $journey,
-        array           $coupledUnits,
+        array           $coupledUnits = [],
         ?Line           $line = null,
         ?Path           $path = null,
         ?Network        $network = null,
