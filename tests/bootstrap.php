@@ -13,6 +13,8 @@ if ($_SERVER['APP_DEBUG']) {
 if (!class_exists(Redis::class)) {
     class Redis
     {
+        public const int PIPELINE = 2;
+
         public function connect(string $host, int $port): bool
         {
             return true;
@@ -29,6 +31,24 @@ if (!class_exists(Redis::class)) {
         public function get(string $key): string|false
         {
             return false;
+        }
+
+        public function multi(int $mode = self::PIPELINE): static
+        {
+            return $this;
+        }
+
+        /**
+         * @return array<int, mixed>|bool
+         */
+        public function exec(): array|bool
+        {
+            return [];
+        }
+
+        public function pipeline(): static
+        {
+            return $this;
         }
     }
 }
