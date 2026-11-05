@@ -1,0 +1,32 @@
+#!/usr/bin/env sh
+
+echo "🛡️ [pre-push] Lancement des contrôles qualité avant push..."
+
+# 1. Analyse statique (PHPStan)
+if [ -f "vendor/bin/phpstan" ]; then
+    echo "🔍 Analyse statique PHPStan..."
+    vendor/bin/phpstan analyse --no-progress
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo "❌ [pre-push] Échec de l'analyse statique PHPStan."
+        echo "💡 Corrige les erreurs ci-dessus avant de pousser sur le dépôt distant."
+        exit 1
+    fi
+    echo "✅ PHPStan : Aucune erreur."
+fi
+
+# 2. Tests unitaires (PHPUnit)
+if [ -f "vendor/bin/phpunit" ]; then
+    echo "🧪 Exécution des tests unitaires PHPUnit..."
+    vendor/bin/phpunit
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo "❌ [pre-push] Échec des tests unitaires PHPUnit."
+        echo "💡 Corrige les tests qui échouent avant de pousser sur le dépôt distant."
+        exit 1
+    fi
+    echo "✅ PHPUnit : Tous les tests passent."
+fi
+
+echo "🎉 [pre-push] Contrôles validés ! Push autorisé."
+exit 0
