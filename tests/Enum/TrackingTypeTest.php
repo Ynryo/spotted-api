@@ -54,4 +54,34 @@ class TrackingTypeTest extends TestCase
 
         $this->assertSame(JourneyTrackingType::UNKNOWN, JourneyTrackingType::fromJourney($journey));
     }
+
+    public function testFromString(): void
+    {
+        $this->assertSame(JourneyTrackingType::GPS, JourneyTrackingType::fromString('GPS'));
+        $this->assertSame(JourneyTrackingType::GPS, JourneyTrackingType::fromString('gps'));
+        $this->assertSame(JourneyTrackingType::ESTIMATED, JourneyTrackingType::fromString('ESTIMATED'));
+        $this->assertSame(JourneyTrackingType::ESTIMATED, JourneyTrackingType::fromString('COMPUTED'));
+        $this->assertSame(JourneyTrackingType::THEORETICAL, JourneyTrackingType::fromString('THEORETICAL'));
+        $this->assertSame(JourneyTrackingType::UNKNOWN, JourneyTrackingType::fromString('INVALID'));
+        $this->assertSame(JourneyTrackingType::UNKNOWN, JourneyTrackingType::fromString(null));
+    }
+
+    public function testGetPriority(): void
+    {
+        $this->assertSame(3, JourneyTrackingType::GPS->getPriority());
+        $this->assertSame(2, JourneyTrackingType::ESTIMATED->getPriority());
+        $this->assertSame(1, JourneyTrackingType::THEORETICAL->getPriority());
+        $this->assertSame(0, JourneyTrackingType::UNKNOWN->getPriority());
+    }
+
+    public function testIsHigher(): void
+    {
+        $this->assertTrue(JourneyTrackingType::isHigher(JourneyTrackingType::GPS, JourneyTrackingType::ESTIMATED));
+        $this->assertTrue(JourneyTrackingType::isHigher(JourneyTrackingType::ESTIMATED, JourneyTrackingType::THEORETICAL));
+        $this->assertTrue(JourneyTrackingType::isHigher(JourneyTrackingType::THEORETICAL, JourneyTrackingType::UNKNOWN));
+        $this->assertTrue(JourneyTrackingType::isHigher(JourneyTrackingType::GPS, null));
+        $this->assertFalse(JourneyTrackingType::isHigher(JourneyTrackingType::THEORETICAL, JourneyTrackingType::GPS));
+        $this->assertFalse(JourneyTrackingType::isHigher(null, JourneyTrackingType::UNKNOWN));
+        $this->assertFalse(JourneyTrackingType::isHigher(JourneyTrackingType::GPS, JourneyTrackingType::GPS));
+    }
 }

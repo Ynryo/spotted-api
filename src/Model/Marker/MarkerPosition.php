@@ -2,14 +2,17 @@
 
 namespace App\Model\Marker;
 
+use App\Enum\JourneyTrackingType;
+
 readonly class MarkerPosition
 {
     public function __construct(
-        public float   $latitude,
-        public float   $longitude,
-        public ?float  $bearing = null,
-        public ?string $type = null,
-    ) {
+        public float               $latitude,
+        public float               $longitude,
+        public ?float              $bearing = null,
+        public JourneyTrackingType $type = JourneyTrackingType::UNKNOWN,
+    )
+    {
     }
 
     /**
@@ -21,8 +24,8 @@ readonly class MarkerPosition
             return null;
         }
 
-        $lat = $data['latitude'] ?? $data['lat'] ?? null;
-        $lon = $data['longitude'] ?? $data['lon'] ?? $data['long'] ?? null;
+        $lat = $data['latitude'] ?? null;
+        $lon = $data['longitude'] ?? null;
 
         if ($lat === null || $lon === null) {
             return null;
@@ -32,7 +35,7 @@ readonly class MarkerPosition
             latitude: (float)$lat,
             longitude: (float)$lon,
             bearing: isset($data['bearing']) ? (float)$data['bearing'] : null,
-            type: isset($data['type']) ? (string)$data['type'] : null,
+            type: JourneyTrackingType::fromString($data['type'] ?? null),
         );
     }
 }
