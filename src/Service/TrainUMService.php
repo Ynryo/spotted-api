@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Enum\CacheTtl;
+use App\Enum\JourneyTrackingType;
 use App\Model\Marker\Marker;
 use App\Model\Marker\MarkerUnit;
 use Redis;
@@ -26,6 +27,7 @@ class TrainUMService
 
         for ($i = 0; $i < $count; $i++) {
             if (isset($paired[$i])) continue;
+            /** @var Marker $a */
             $a = $trains[$i];
             if (!$a->isTrain() || $a->getPosition() === null || $a->getPosition()->bearing == 0) {
                 $finalMarkers[] = $a;
@@ -34,12 +36,18 @@ class TrainUMService
 
             for ($j = $i + 1; $j < $count; $j++) {
                 if (isset($paired[$j])) continue;
+                /** @var Marker $b */
                 $b = $trains[$j];
                 if (!$b->isTrain() || $b->getPosition() === null || $b->getPosition()->bearing == 0) continue;
 
                 if (self::areNeighbors($a, $b)) {
-                    $a->addUnit(MarkerUnit::fromMarker($b));
                     $paired[$j] = true;
+
+                    if ($a->getLineNumber() == $b->getLineNumber()) { //check against 2 trains avec meme lineNumber d'etre en UM
+                        if (JourneyTrackingType::isHigher($b->getPositionType(), $a->getPositionType())) $a = $b;
+                        continue;
+                    }
+                    $a->addUnit(MarkerUnit::fromMarker($b));
 
                     self::cacheCoupledUnits([$a, $b], $redis);
                     break;

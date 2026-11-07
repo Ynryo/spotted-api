@@ -3,6 +3,7 @@
 namespace App\Tests\Model\Marker;
 
 use App\DTO\MarkerQueryDto;
+use App\Enum\JourneyTrackingType;
 use App\Model\Marker\Marker;
 use App\Model\Marker\MarkerPosition;
 use App\Model\Marker\MarkerUnit;
@@ -46,10 +47,10 @@ class MarkerTest extends TestCase
         $this->assertSame(48.8566, $pos->latitude);
         $this->assertSame(2.3522, $pos->longitude);
         $this->assertSame(120.5, $pos->bearing);
-        $this->assertSame('GPS', $pos->type);
+        $this->assertSame(JourneyTrackingType::GPS, $pos->type);
     }
 
-    public function testMarkerPositionFromFlatLatLon(): void
+    public function testMarkerPositionReturnsNullWithoutLatitudeAndLongitude(): void
     {
         $raw = [
             'lat' => 45.4,
@@ -58,10 +59,7 @@ class MarkerTest extends TestCase
 
         $pos = MarkerPosition::fromArray($raw);
 
-        $this->assertNotNull($pos);
-        $this->assertSame(45.4, $pos->latitude);
-        $this->assertSame(4.3, $pos->longitude);
-        $this->assertNull($pos->bearing);
+        $this->assertNull($pos);
     }
 
     public function testMarkerPositionReturnsNullOnMissingCoords(): void
@@ -159,34 +157,34 @@ class MarkerTest extends TestCase
     {
         // 2 unités GPS -> GPS
         $markerGps = new Marker('1', [
-            new MarkerUnit('1', '1', new MarkerPosition(48.0, 2.0, 10.0, 'GPS')),
-            new MarkerUnit('2', '2', new MarkerPosition(48.0, 2.0, 10.0, 'GPS')),
+            new MarkerUnit('1', '1', new MarkerPosition(48.0, 2.0, 10.0, JourneyTrackingType::GPS)),
+            new MarkerUnit('2', '2', new MarkerPosition(48.0, 2.0, 10.0, JourneyTrackingType::GPS)),
         ]);
-        $this->assertSame('GPS', $markerGps->getPositionType());
-        $this->assertSame('GPS', $markerGps->getPosition()->type);
+        $this->assertSame(JourneyTrackingType::GPS, $markerGps->getPositionType());
+        $this->assertSame(JourneyTrackingType::GPS, $markerGps->getPosition()->type);
 
-        // 1 GPS + 1 COMPUTED -> COMPUTED
+        // 1 GPS + 1 ESTIMATED -> GPS (règle du MAX / meilleur signal retenu)
         $markerMixed = new Marker('1', [
-            new MarkerUnit('1', '1', new MarkerPosition(48.0, 2.0, 10.0, 'GPS')),
-            new MarkerUnit('2', '2', new MarkerPosition(48.0, 2.0, 10.0, 'COMPUTED')),
+            new MarkerUnit('1', '1', new MarkerPosition(48.0, 2.0, 10.0, JourneyTrackingType::GPS)),
+            new MarkerUnit('2', '2', new MarkerPosition(48.0, 2.0, 10.0, JourneyTrackingType::ESTIMATED)),
         ]);
-        $this->assertSame('COMPUTED', $markerMixed->getPositionType());
-        $this->assertSame('COMPUTED', $markerMixed->getPosition()->type);
+        $this->assertSame(JourneyTrackingType::GPS, $markerMixed->getPositionType());
+        $this->assertSame(JourneyTrackingType::GPS, $markerMixed->getPosition()->type);
 
-        // 1 COMPUTED + 1 THEORETICAL -> THEORETICAL
+        // 1 ESTIMATED + 1 THEORETICAL -> ESTIMATED (règle du MAX / meilleur signal retenu)
         $markerTheorical = new Marker('1', [
-            new MarkerUnit('1', '1', new MarkerPosition(48.0, 2.0, 10.0, 'COMPUTED')),
-            new MarkerUnit('2', '2', new MarkerPosition(48.0, 2.0, 10.0, 'THEORETICAL')),
+            new MarkerUnit('1', '1', new MarkerPosition(48.0, 2.0, 10.0, JourneyTrackingType::ESTIMATED)),
+            new MarkerUnit('2', '2', new MarkerPosition(48.0, 2.0, 10.0, JourneyTrackingType::THEORETICAL)),
         ]);
-        $this->assertSame('THEORETICAL', $markerTheorical->getPositionType());
-        $this->assertSame('THEORETICAL', $markerTheorical->getPosition()->type);
+        $this->assertSame(JourneyTrackingType::ESTIMATED, $markerTheorical->getPositionType());
+        $this->assertSame(JourneyTrackingType::ESTIMATED, $markerTheorical->getPosition()->type);
     }
 
     public function testMarkerBearingCircularAverageAroundNorth(): void
     {
         $marker = new Marker('1', [
-            new MarkerUnit('1', '1', new MarkerPosition(48.0, 2.0, 359.0, 'GPS')),
-            new MarkerUnit('2', '2', new MarkerPosition(48.0, 2.0, 1.0, 'GPS')),
+            new MarkerUnit('1', '1', new MarkerPosition(48.0, 2.0, 359.0, JourneyTrackingType::GPS)),
+            new MarkerUnit('2', '2', new MarkerPosition(48.0, 2.0, 1.0, JourneyTrackingType::GPS)),
         ]);
 
         $position = $marker->getPosition();
@@ -196,11 +194,11 @@ class MarkerTest extends TestCase
 
     public function testMarkerIsTrain(): void
     {
-        $sncf = Marker::fromArray(['id' => 'SNCF-4::Journey:1', 'lat' => 48.0, 'lon' => 2.0]);
-        $eurostar = Marker::fromArray(['id' => 'Eurostar:9001', 'lat' => 48.0, 'lon' => 2.0]);
-        $sleeper = Marker::fromArray(['id' => 'Sleeper:453', 'lat' => 48.0, 'lon' => 2.0]);
-        $bus = Marker::fromArray(['id' => 'TCL:Bus:12', 'lat' => 48.0, 'lon' => 2.0]);
-        $flixbus = Marker::fromArray(['id' => 'FLIXBUS:Tracking:34', 'lat' => 48.0, 'lon' => 2.0]);
+        $sncf = Marker::fromArray(['id' => 'SNCF-4::Journey:1', 'latitude' => 48.0, 'longitude' => 2.0]);
+        $eurostar = Marker::fromArray(['id' => 'Eurostar:9001', 'latitude' => 48.0, 'longitude' => 2.0]);
+        $sleeper = Marker::fromArray(['id' => 'Sleeper:453', 'latitude' => 48.0, 'longitude' => 2.0]);
+        $bus = Marker::fromArray(['id' => 'TCL:Bus:12', 'latitude' => 48.0, 'longitude' => 2.0]);
+        $flixbus = Marker::fromArray(['id' => 'FLIXBUS:Tracking:34', 'latitude' => 48.0, 'longitude' => 2.0]);
 
         $this->assertTrue($sncf->isTrain());
         $this->assertTrue($eurostar->isTrain());
