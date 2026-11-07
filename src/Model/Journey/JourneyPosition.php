@@ -2,16 +2,18 @@
 
 namespace App\Model\Journey;
 
+use App\Enum\JourneyTrackingType;
+
 readonly class JourneyPosition
 {
     public function __construct(
-        public float   $latitude,
-        public float   $longitude,
-        public ?float  $bearing = 0.0,
-        public ?bool   $atStop = false,
-        public ?float  $distanceTraveled = 0.0,
-        public ?string $type = null,
-        public ?string $recordedAt = null,
+        public float                $latitude,
+        public float                $longitude,
+        public ?float               $bearing = 0.0,
+        public ?bool                $atStop = false,
+        public ?float               $distanceTraveled = 0.0,
+        public JourneyTrackingType  $type = JourneyTrackingType::UNKNOWN,
+        public ?string              $recordedAt = null,
     )
     {
     }
@@ -31,7 +33,7 @@ readonly class JourneyPosition
             bearing: (float)($data['bearing'] ?? 0.0),
             atStop: (bool)($data['atStop'] ?? false),
             distanceTraveled: (float)($data['distanceTraveled'] ?? 0.0),
-            type: $data['type'] ?? null,
+            type: JourneyTrackingType::fromString($data['type'] ?? null),
             recordedAt: $data['recordedAt'] ?? null,
         );
     }
