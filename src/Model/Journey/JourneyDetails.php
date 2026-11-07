@@ -78,9 +78,6 @@ readonly class JourneyDetails
             return null;
         }
 
-        $wheelchairAccessibility = JourneyWheelchairAccessibility::fromBool($journey['wheelchairAccessible'] ?? null);
-        $bikeAccessibility = JourneyBikeAccessibility::fromBool($journey['bikesAllowed'] ?? $journey['bikeAllowed'] ?? null);
-
         $position = !empty($journey['position']) && is_array($journey['position'])
             ? JourneyPosition::fromArray($journey['position'])
             : null;
@@ -94,8 +91,8 @@ readonly class JourneyDetails
             coupledUnits: $coupledUnits,
             serviceDate: $journey['serviceDate'] ?? null,
             occupancy: JourneyOccupancy::fromString($journey['occupancy'] ?? null),
-            wheelchairAccessibility: $wheelchairAccessibility,
-            bikeAccessibility: $bikeAccessibility,
+            wheelchairAccessibility: JourneyWheelchairAccessibility::fromBool($journey['wheelchairAccessible'] ?? null),
+            bikeAccessibility: JourneyBikeAccessibility::fromBool($journey['bikesAllowed'] ?? $journey['bikeAllowed'] ?? null),
             stops: $stops,
             position: $position,
             network: $network,

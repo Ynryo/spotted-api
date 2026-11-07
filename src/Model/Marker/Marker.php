@@ -3,6 +3,7 @@
 namespace App\Model\Marker;
 
 use App\DTO\MarkerQueryDto;
+use App\Enum\JourneyTrackingType;
 use JsonSerializable;
 
 class Marker implements JsonSerializable
@@ -98,30 +99,16 @@ class Marker implements JsonSerializable
         return implode('/', $lineNumbers);
     }
 
-    public function getPositionType(): ?string
+    public function getPositionType(): JourneyTrackingType
     {
-        $priority = [
-            'THEORETICAL' => 1,
-            'THEORICAL' => 1,
-            'COMPUTED' => 2,
-            'GPS' => 3,
-        ];
-
-        $minType = null;
-        $minPriority = PHP_INT_MAX;
-
+        $trackingType = JourneyTrackingType::UNKNOWN;
         foreach ($this->units as $unit) {
-            $type = $unit->position?->type;
-            if ($type === null) continue;
-
-            $p = $priority[strtoupper($type)] ?? 1;
-            if ($p < $minPriority) {
-                $minPriority = $p;
-                $minType = $type;
+            if (JourneyTrackingType::isHigher($unit->position?->type, $trackingType)) {
+                $trackingType = $unit->position?->type;
             }
         }
 
-        return $minType;
+        return $trackingType;
     }
 
     public function getPosition(): ?MarkerPosition
