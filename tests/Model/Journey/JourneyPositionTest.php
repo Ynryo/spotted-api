@@ -2,6 +2,7 @@
 
 namespace App\Tests\Model\Journey;
 
+use App\Enum\JourneyTrackingType;
 use App\Model\Journey\JourneyPosition;
 use PHPUnit\Framework\TestCase;
 
@@ -26,7 +27,7 @@ class JourneyPositionTest extends TestCase
         $this->assertSame(180.5, $pos->bearing);
         $this->assertTrue($pos->atStop);
         $this->assertSame(1250.0, $pos->distanceTraveled);
-        $this->assertSame('GPS', $pos->type);
+        $this->assertSame(JourneyTrackingType::GPS, $pos->type);
         $this->assertSame('2026-09-30T15:00:00Z', $pos->recordedAt);
     }
 
@@ -39,7 +40,7 @@ class JourneyPositionTest extends TestCase
         $this->assertSame(0.0, $pos->bearing);
         $this->assertFalse($pos->atStop);
         $this->assertSame(0.0, $pos->distanceTraveled);
-        $this->assertNull($pos->type);
+        $this->assertSame(JourneyTrackingType::UNKNOWN, $pos->type);
         $this->assertNull($pos->recordedAt);
     }
 }
