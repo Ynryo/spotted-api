@@ -38,8 +38,13 @@ class TrainUMService
                 if (!$b->isTrain() || $b->getPosition() === null || $b->getPosition()->bearing == 0) continue;
 
                 if (self::areNeighbors($a, $b)) {
-                    $a->addUnit(MarkerUnit::fromMarker($b));
                     $paired[$j] = true;
+
+                    if ($a->getLineNumber() == $b->getLineNumber()) { //check against 2 trains avec meme lineNumber d'etre en UM
+                        if ($b->getPositionType() === 'COMPUTED' && $a->getPositionType() !== 'COMPUTED') $a = $b;
+                        continue;
+                    }
+                    $a->addUnit(MarkerUnit::fromMarker($b));
 
                     self::cacheCoupledUnits([$a, $b], $redis);
                     break;
