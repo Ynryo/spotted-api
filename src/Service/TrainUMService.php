@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Enum\CacheTtl;
+use App\Enum\JourneyTrackingType;
 use App\Model\Marker\Marker;
 use App\Model\Marker\MarkerUnit;
 use Redis;
@@ -41,7 +42,7 @@ class TrainUMService
                     $paired[$j] = true;
 
                     if ($a->getLineNumber() == $b->getLineNumber()) { //check against 2 trains avec meme lineNumber d'etre en UM
-                        if ($b->getPositionType() === 'COMPUTED' && $a->getPositionType() !== 'COMPUTED') $a = $b;
+                        if (JourneyTrackingType::isHigher($b->getPositionType(), $a->getPositionType())) $a = $b;
                         continue;
                     }
                     $a->addUnit(MarkerUnit::fromMarker($b));
