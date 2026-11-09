@@ -4,7 +4,7 @@ namespace App\Helper;
 
 final class ColorHelper
 {
-    public static function normalize(?string $color, string $default = '#000000'): ?string
+    public static function normalize(?string $color, string $default = '#000000'): string
     {
         if (empty($color)) return $default;
         $hex = ltrim(trim($color), '#');
