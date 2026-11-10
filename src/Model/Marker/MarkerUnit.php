@@ -2,6 +2,7 @@
 
 namespace App\Model\Marker;
 
+use App\Helper\ColorHelper;
 use JsonSerializable;
 
 readonly class MarkerUnit implements JsonSerializable
@@ -33,8 +34,8 @@ readonly class MarkerUnit implements JsonSerializable
             id: (string)$data['id'],
             lineNumber: isset($data['lineNumber']) ? (string)$data['lineNumber'] : null,
             position: $position,
-            color: (string)($data['color'] ?? "#fff"),
-            fillColor: (string)($data['fillColor'] ?? "#000"),
+            color: ColorHelper::normalize($data['color'] ?? null, "#FFFFFF"),
+            fillColor: ColorHelper::normalize($data['fillColor'] ?? null, "#000000"),
         );
     }
 
@@ -46,8 +47,8 @@ readonly class MarkerUnit implements JsonSerializable
             id: $marker->id,
             lineNumber: $firstUnit->lineNumber ?? $marker->getLineNumber(),
             position: $firstUnit->position ?? $marker->getPosition(),
-            color: $firstUnit->color ?? "#fff",
-            fillColor: $firstUnit->fillColor ?? "#000",
+            color: ColorHelper::normalize($firstUnit?->color, "#FFFFFF"),
+            fillColor: ColorHelper::normalize($firstUnit?->fillColor, "#000000"),
         );
     }
 

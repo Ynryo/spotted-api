@@ -2,10 +2,16 @@
 
 echo "🛡️ [pre-push] Lancement des contrôles qualité avant push..."
 
+PHP_CMD="php"
+WINGET_PHP83="$LOCALAPPDATA/Microsoft/WinGet/Packages/PHP.PHP.8.3_Microsoft.Winget.Source_8wekyb3d8bbwe/php.exe"
+if [ -f "$WINGET_PHP83" ]; then
+    PHP_CMD="$WINGET_PHP83"
+fi
+
 # 1. Analyse statique (PHPStan)
 if [ -f "vendor/bin/phpstan" ]; then
     echo "🔍 Analyse statique PHPStan..."
-    vendor/bin/phpstan analyse --no-progress
+    "$PHP_CMD" vendor/bin/phpstan analyse --no-progress
     if [ $? -ne 0 ]; then
         echo ""
         echo "❌ [pre-push] Échec de l'analyse statique PHPStan."
@@ -18,7 +24,7 @@ fi
 # 2. Tests unitaires (PHPUnit)
 if [ -f "vendor/bin/phpunit" ]; then
     echo "🧪 Exécution des tests unitaires PHPUnit..."
-    vendor/bin/phpunit
+    "$PHP_CMD" vendor/bin/phpunit
     if [ $? -ne 0 ]; then
         echo ""
         echo "❌ [pre-push] Échec des tests unitaires PHPUnit."
