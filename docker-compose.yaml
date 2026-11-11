@@ -1,55 +1,56 @@
 services:
-  redis:
-    container_name: spotted-api-redis
-    image: redis:7-alpine
-    restart: unless-stopped
-    ports:
-      - "127.0.0.1:6379:6379"
-    networks:
-      - spotted-network
+    redis:
+        container_name: spotted-api-redis
+        image: redis:7-alpine
+        restart: unless-stopped
+        ports:
+            - "127.0.0.1:6379:6379"
+        networks:
+            - spotted-network
 
-  php:
-    container_name: spotted-api-php
-    build:
-      context: .
-      dockerfile: Dockerfile
-    depends_on:
-      - redis
-    restart: unless-stopped
-    ports:
-      - "127.0.0.1:8080:80"
-    volumes:
-      - ./:/app
-    environment:
-      SERVER_NAME: ":80"
-    extra_hosts:
-      - "host_server:host-gateway"
-    networks:
-      - spotted-network
+    php:
+        container_name: spotted-api-php
+        build:
+            context: .
+            dockerfile: Dockerfile
+        depends_on:
+            - redis
+        restart: unless-stopped
+        ports:
+            - "127.0.0.1:8080:80"
+        volumes:
+            - ./:/app
+            - /app/var/cache
+        environment:
+            SERVER_NAME: ":80"
+        extra_hosts:
+            - "host_server:host-gateway"
+        networks:
+            - spotted-network
 
-  worker:
-    container_name: spotted-api-worker
-    build:
-      context: .
-      dockerfile: Dockerfile
-    depends_on:
-      - redis
-    restart: unless-stopped
-    volumes:
-      - ./:/app
-    environment:
-      SERVER_NAME: ":80"
-    networks:
-      - spotted-network
-    command: ["php", "bin/console", "app:sync-markers", "--watch"]
-    healthcheck:
-      test: [ "CMD-SHELL", "php -r \"$$r = new Redis(); $$r->connect('redis', 6379); exit($$r->exists('markers') ? 0 : 1);\"" ]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
+    worker:
+        container_name: spotted-api-worker
+        build:
+            context: .
+            dockerfile: Dockerfile
+        depends_on:
+            - redis
+        restart: unless-stopped
+        volumes:
+            - ./:/app
+            - /app/var/cache
+        environment:
+            SERVER_NAME: ":80"
+        networks:
+            - spotted-network
+        command: [ "php", "bin/console", "app:sync-markers", "--watch" ]
+        healthcheck:
+            test: [ "CMD", "php", "-r", "$$r = new Redis(); $$r->connect('redis', 6379); exit($$r->exists('markers') ? 0 : 1);" ]
+            timeout: 5s
+            retries: 3
+            start_period: 10s
 
 networks:
-  spotted-network:
-    name: spotted-network
-    driver: bridge
+    spotted-network:
+        name: spotted-network
+        driver: bridge

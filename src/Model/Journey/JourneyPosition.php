@@ -21,7 +21,7 @@ readonly class JourneyPosition
     /**
      * @param array<string, mixed>|null $data
      */
-    public static function fromArray(?array $data = null): ?self
+    public static function fromArray(?array $data = null, ?JourneyTrackingType $type = null): ?self
     {
         if ($data === null) {
             return null;
@@ -33,7 +33,7 @@ readonly class JourneyPosition
             bearing: (float)($data['bearing'] ?? 0.0),
             atStop: (bool)($data['atStop'] ?? false),
             distanceTraveled: (float)($data['distanceTraveled'] ?? 0.0),
-            type: JourneyTrackingType::fromString($data['type'] ?? null),
+            type: $type ?? JourneyTrackingType::fromString($data['type'] ?? null),
             recordedAt: $data['recordedAt'] ?? null,
         );
     }

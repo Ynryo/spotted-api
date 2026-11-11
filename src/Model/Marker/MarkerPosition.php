@@ -18,7 +18,7 @@ readonly class MarkerPosition
     /**
      * @param array<string, mixed>|null $data
      */
-    public static function fromArray(?array $data = null): ?self
+    public static function fromArray(?array $data = null, ?JourneyTrackingType $type = null): ?self
     {
         if (empty($data)) {
             return null;
@@ -35,7 +35,7 @@ readonly class MarkerPosition
             latitude: (float)$lat,
             longitude: (float)$lon,
             bearing: isset($data['bearing']) ? (float)$data['bearing'] : null,
-            type: JourneyTrackingType::fromString($data['type'] ?? null),
+            type: $type ?? JourneyTrackingType::fromString($data['type'] ?? null),
         );
     }
 }
