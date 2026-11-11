@@ -46,6 +46,16 @@ class TrackingTypeTest extends TestCase
         $this->assertSame(JourneyTrackingType::THEORETICAL, JourneyTrackingType::fromJourney($journey));
     }
 
+    public function testReturnsTheoreticalWhenPositionIsComputedAndCallsAreEmpty(): void
+    {
+        $journey = [
+            'position' => ['type' => 'COMPUTED'],
+            'calls' => [],
+        ];
+
+        $this->assertSame(JourneyTrackingType::THEORETICAL, JourneyTrackingType::fromJourney($journey));
+    }
+
     public function testReturnsUnknownWhenPositionTypeIsMissing(): void
     {
         $journey = [
@@ -53,6 +63,11 @@ class TrackingTypeTest extends TestCase
         ];
 
         $this->assertSame(JourneyTrackingType::UNKNOWN, JourneyTrackingType::fromJourney($journey));
+    }
+
+    public function testReturnsUnknownWhenJourneyIsEmpty(): void
+    {
+        $this->assertSame(JourneyTrackingType::UNKNOWN, JourneyTrackingType::fromJourney([]));
     }
 
     public function testFromString(): void
@@ -63,6 +78,7 @@ class TrackingTypeTest extends TestCase
         $this->assertSame(JourneyTrackingType::UNKNOWN, JourneyTrackingType::fromString('UNKNOWN'));
         $this->assertSame(JourneyTrackingType::UNKNOWN, JourneyTrackingType::fromString(null));
         $this->assertSame(JourneyTrackingType::UNKNOWN, JourneyTrackingType::fromString('INVALID'));
+        $this->assertSame(JourneyTrackingType::UNKNOWN, JourneyTrackingType::fromString('COMPUTED'));
     }
 
     public function testGetPriority(): void
