@@ -4,6 +4,7 @@ namespace App\Model\Journey;
 
 use App\Enum\JourneyBikeAccessibility;
 use App\Enum\JourneyOccupancy;
+use App\Enum\JourneyTrackingType;
 use App\Enum\JourneyWheelchairAccessibility;
 use App\Enum\VehicleType;
 use App\Model\Line\Line;
@@ -79,8 +80,10 @@ readonly class JourneyDetails
         }
 
         $position = !empty($journey['position']) && is_array($journey['position'])
-            ? JourneyPosition::fromArray($journey['position'])
-            : null;
+            ? JourneyPosition::fromArray(
+                $journey['position'],
+                JourneyTrackingType::fromJourney($journey)
+            ) : null;
 
         $vehicleObj = $vehicle ?? (!empty($journey['vehicle']) && is_array($journey['vehicle']) ? VehicleDetails::fromArray($journey['vehicle']) : null);
 

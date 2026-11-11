@@ -43,4 +43,22 @@ class JourneyPositionTest extends TestCase
         $this->assertSame(JourneyTrackingType::UNKNOWN, $pos->type);
         $this->assertNull($pos->recordedAt);
     }
+
+    public function testFromArrayWithExplicitTrackingType(): void
+    {
+        $raw = [
+            'latitude' => 45.0,
+            'longitude' => 4.0,
+            'type' => 'COMPUTED',
+        ];
+
+        $pos = JourneyPosition::fromArray($raw, JourneyTrackingType::ESTIMATED);
+
+        $this->assertSame(JourneyTrackingType::ESTIMATED, $pos->type);
+    }
+
+    public function testFromArrayReturnsNullWhenDataIsNull(): void
+    {
+        $this->assertNull(JourneyPosition::fromArray(null));
+    }
 }
