@@ -4,6 +4,7 @@ namespace App\Model\Marker;
 
 use App\DTO\MarkerQueryDto;
 use App\Enum\JourneyTrackingType;
+use App\Helper\ColorHelper;
 use JsonSerializable;
 
 class Marker implements JsonSerializable
@@ -60,8 +61,8 @@ class Marker implements JsonSerializable
                     id: $id,
                     lineNumber: $lineUnitNumber,
                     position: $position,
-                    color: (string)($data['color'] ?? "#fff"),
-                    fillColor: (string)($data['fillColor'] ?? "#000"),
+                    color: ColorHelper::normalize($data['color'] ?? null, "#FFFFFF"),
+                    fillColor: ColorHelper::normalize($data['fillColor'] ?? null, "#000000"),
                 ),
             ];
         }
